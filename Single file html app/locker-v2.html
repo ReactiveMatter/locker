@@ -1340,6 +1340,36 @@ body
 	margin-top: 20px;
 }
 
+/*Modifications for mobile*/
+@media screen and (max-width: 767px)
+{
+	html, body, #root, #main {
+	  min-height: 100%;
+	}
+
+	#side-nav-bar
+	{
+		display: none;
+	}
+
+	#top-bar
+	{
+		height: unset;
+	}
+
+	.top-bar-block
+	{
+		border-top: 1px solid var(--gray-6);
+	}
+	#search
+	{
+		order: 100;
+		width: 100%;
+	}
+}
+
+/*css_end*/
+
 
 </style>
 </head>
