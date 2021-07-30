@@ -957,7 +957,6 @@ function createTopBar()
 		<i class="fas fa-plus"></i>
 	</div>
 	`;
-
 	jQuery("#top-bar").html(topBarHTML);
 }
 
@@ -2333,7 +2332,11 @@ function initializeDashboard()
 	You have <span class="count">`+Database.modules.journalManager.journals.length+` journals saved.
 	</span>
 	</div>`;
-	jQuery(dashboard_scope+"#top-bar").html("<div style='line-height:0.8em;padding:calc(20px - 0.5em) 20px;'>Welcome "+Database.username+"</div>");
+	jQuery(dashboard_scope+"#top-bar").html(`
+		<div class="top-bar-block option toggle-menu" title="Toggle menu">
+		<i class="fas fa-bars"></i>
+		</div>
+		<div style='line-height:0.8em;padding:calc(20px - 0.5em) 20px;'>Welcome `+Database.username+"</div>");
 	jQuery(dashboard_scope+"#view").html(viewHTML);
 	jQuery("#side-nav-bar .nav-item").removeClass("active");
 	jQuery("#side-nav-bar div[data-target=dashboard]").addClass("active");
