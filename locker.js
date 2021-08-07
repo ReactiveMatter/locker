@@ -4,9 +4,9 @@ class database
 	{
 	this.name;
 	this.username;
-	this.version=1;
+	this.version=2; //Added in version 1
 	this.modules={};
-	this.conf= new conf();
+	this.conf= new conf(); //Added in version 1
 	}
 }
 
@@ -54,7 +54,7 @@ class notesManager
 {	constructor()
 	{
 	this.notes = [];
-	this.tags = [];
+	this.tags = []; //Added in version 2
 	}
 }
 
@@ -75,8 +75,8 @@ class tag
 {
 	constructor()
 	{
-		this.name;
-		this.items;
+		this.id;
+		this.tags = [];
 	}
 }
 
@@ -85,7 +85,12 @@ class conf
 	constructor()
 	{
 		this.passwordManager={sort: 3},
-		this.notesManager={sort: 3},
+		this.notesManager={sort: 3,
+	  tagsPosition: 0, /*Added in version 2
+		0 for bottom and 1 for top
+	  */
+	  multitagFilter:false //Added in version 2
+		},
 		this.journalManager={sort: 3}
 		/* Sorting codes
 		By name (A-Z): 1
@@ -306,6 +311,8 @@ var notes_manager_scope="div[data-page='notes_manager'] ";
 var journal_manager_scope="div[data-page='journal_manager'] ";
 var settings_scope="div[data-page='settings'] ";
 var appPass;
+var noteHistory = []; //0 means notes home.
+var tag_filter = [];
 
 // ************************** Functions to run at start
 bindEvents();
@@ -521,8 +528,12 @@ function bindEvents()
 	});
 
 
+	jQuery('body').on("click",notes_manager_scope+".option.home", function(){
+		initializeNotesManager();
+	});
+
 	jQuery('body').on("click",notes_manager_scope+".option.back", function(){
-		loadState(state);
+		notesBackButton();
 	});
 
 	jQuery('body').on("click",notes_manager_scope+".notes-block .option.edit", function(){
@@ -570,6 +581,51 @@ function bindEvents()
 	searchNotes();
 	});
 
+	jQuery('body').on("click", notes_manager_scope+"#tags .tag", function(){
+	let t=jQuery(this).attr("data");
+	if(Database.conf.notesManager.multitagFilter)
+	{		
+			if(tag_filter.includes(t))
+			{ /*Remove from tag filter and filter notes */ 
+					tag_filter = tag_filter.filter(function(e){
+					return e!=t;
+					});
+				jQuery(this).removeClass("active");
+			}
+			else
+			{	
+				/*Add to tag filter and filter notes */
+				tag_filter.push(t);
+				jQuery(this).addClass("active");
+			}
+			
+	}
+	else
+	{	
+		tag_filter = [];
+		
+		if(!jQuery(this).hasClass("active"))
+		{
+			tag_filter.push(t);
+			jQuery(".tag").removeClass("active");
+			jQuery(this).addClass("active");
+		}
+		else{
+			jQuery(".tag").removeClass("active");
+		}
+	}
+
+	if(tag_filter.length==0)
+	{	
+		createNotesSearchResultsView(Database.modules.notesManager.notes);
+	}
+	else
+	{
+		createNotesSearchResultsView(filterNotes(tag_filter));
+	}
+	
+	
+	});
 
 
 	/* For journal manager */
@@ -775,31 +831,51 @@ function addDatabase(data)
 {
 	if(data)
 	{	
-		
-			Database.name = data.name;
-			Database.username = data.username;
-
-			Database.modules.passwordManager = data.modules.passwordManager;
-			Database.modules.journalManager = data.modules.journalManager;
-			Database.modules.notesManager.notes = data.modules.notesManager.notes;
-			if(typeof data.modules.notesManager.tags !=='undefined')
-			{
-				Database.modules.notesManager.tags = data.modules.notesManager.tags
-			}
-		
-		
-		//To import conf if it exists. Conf was introduced when version property was introduces. So earlier files will not have conf and version properties.
-		if(typeof data.conf !== 'undefined' && !jQuery.isEmptyObject(data.conf))
-		{	
-			if(typeof data.version !== 'undefined')
-			{
-				if (data.version == Database.version)
-				{
-					Database.conf = data.conf;
-				}
-			}
 			
-		}
+			if(typeof data.version == 'undefined')
+			{	
+				 //This means the Database version is not defined
+				console.log("Imported file is of version 0 upgrading to version 1");
+				data.version = 1;
+				data.conf = Database.conf;
+			}
+
+			if(data.version == 1)
+			{	// Upgrade old data to version 2 format with default values.
+				console.log("Imported file is of version 1 upgrading to version 2");
+				data.version = 2;
+				data.conf.notesManager.tagsPosition = Database.conf.notesManager.tagsPosition;
+				data.modules.notesManager.tags= Database.modules.notesManager.tags;
+			}
+
+			Database = data;
+
+		// Earlier implementation - 
+		// 	Database.name = data.name;
+		// 	Database.username = data.username;
+
+		// 	Database.modules.passwordManager = data.modules.passwordManager;
+		// 	Database.modules.journalManager = data.modules.journalManager;
+		// 	Database.modules.notesManager.notes = data.modules.notesManager.notes;
+		// 	if(typeof data.modules.notesManager.tags !=='undefined')
+		// 	{
+		// 		Database.modules.notesManager.tags = data.modules.notesManager.tags
+		// 	}
+		
+		
+		// //To import conf if it exists. Conf was introduced when version property was introduces. So earlier files will not have conf and version properties.
+		// if(typeof data.conf !== 'undefined' && !jQuery.isEmptyObject(data.conf))
+		// {	
+		// 	if(typeof data.version !== 'undefined')
+		// 	{
+		// 		if (data.version == Database.version)
+		// 		{
+		// 			Database.conf = data.conf;
+		// 		}
+		// 	}
+			
+		// }
+
 		return true;
 
 
@@ -943,6 +1019,32 @@ function hideModal()
 	state.dialog = false;
 }
 
+function createNotesManagerTopBar()
+{
+
+	let topBarHTML=`
+	<div class="top-bar-block option toggle-menu" title="Toggle menu">
+		<i class="fas fa-bars"></i>
+	</div>`;
+	if(noteHistory.length>0)
+	{
+		topBarHTML+=`
+		<div class="back top-bar-block option" title="Back">
+	<i class="fas fa-chevron-left"></i>
+	</div>
+		`;
+	}
+	topBarHTML+=`
+	<div class="top-bar-block" id="search">
+		<input type="text" name="search" placeholder="Search">
+	</div>
+	<div class="add top-bar-block option">
+		<i class="fas fa-plus"></i>
+	</div>`;
+
+	jQuery("#top-bar").html(topBarHTML);
+
+}
 
 function createTopBar()
 {
@@ -1346,8 +1448,10 @@ function applyConfigCreatePasswordBlocks(passwords)
 function initializeNotesManager()
 {
 	jQuery("#main").attr("data-page","notes_manager");
-	createTopBar();
+	createNotesManagerTopBar();
 	let viewHTML=`
+	<div id="tags" class="row">
+	</div>
 	<div id="messages">
 	</div>
 	<div id="note" style="display:none;">
@@ -1380,6 +1484,16 @@ function initializeNotesManager()
 	`;
 	jQuery(notes_manager_scope+"#top-bar").append(sortOptionHTML);
 	jQuery(notes_manager_scope+"#top-bar #sort-dropdown .dropdown-item[value="+Database.conf.notesManager.sort+"]").addClass("active");
+
+	let uniqueTags=getUniqueTags();
+	if(uniqueTags.length>0)
+	{
+		jQuery(notes_manager_scope+"#tags").html(getTagViewHTML(uniqueTags));
+	}
+
+	tag_filter = [];
+
+	addNotesHistory(0);
 }
 
 
@@ -1412,6 +1526,7 @@ function addNotesBlock(note)
 		<div class="note-details">
 		<div>Created on <span class="date-created">`+humanReadableDate(note.date)+`</span></div>
 		<div>Last modified on <span class="date-modified">`+humanReadableDate(note.modified)+`</span></div>
+		<div class="tags row">`+getTagViewHTML(getTags(note.id))+`</div>
 		</div>
 		<div class="options"><span class="edit option" title="Edit"><i class="far fa-edit"></i></span><span class="delete option" title="Delete"><i class="fas fa-trash"></i></span></div>
 		</div>
@@ -1429,6 +1544,12 @@ function openAddNewNoteForm()
   		</div>
 		<input type="text" name="title" class="form-control" value="Untitled">
 		</div>
+		<div class="input-group form-group">
+		<div class="input-group-prepend">
+  	<span class="input-group-text">Tags</span>
+  	</div>
+  	<input type="text" name="tags" class="form-control" placeholder="Add tags seperated with space">
+  	</div>
 		<div id="note-editor">
 		</div>
 		<button type="button" class="btn btn-success option save">Save</button>
@@ -1437,6 +1558,7 @@ function openAddNewNoteForm()
 	`;
 
   jQuery(notes_manager_scope+"#note").html(htmlCode).show();
+  jQuery(notes_manager_scope+"#tags").hide();
   jQuery(notes_manager_scope+"#notes").hide();
 
   var toolbarOptions = [
@@ -1485,9 +1607,15 @@ function editNote(id)
 		<div class="input-group-prepend">
   		<span class="input-group-text">Title</span>
   		</div>
-  		<input type="hidden" name="id" class="form-control" value="`+id+`">
+  	<input type="hidden" name="id" class="form-control" value="`+id+`">
 		<input type="text" name="title" class="form-control" value="`+note.title+`">
 		</div>
+		<div class="input-group form-group">
+		<div class="input-group-prepend">
+  	<span class="input-group-text">Tags</span>
+  	</div>
+  	<input type="text" name="tags" class="form-control" placeholder="Add tags seperated with space">
+  	</div>
 		<div id="note-editor">
 		</div>
 		<button type="button" class="btn btn-success option update">Save</button>
@@ -1497,7 +1625,17 @@ function editNote(id)
 
   jQuery(notes_manager_scope+"#note").html(htmlCode).show();
   jQuery(notes_manager_scope+"#note").attr("data-note-id",note.id);
+  jQuery(notes_manager_scope+"#tags").hide();
   jQuery(notes_manager_scope+"#notes").hide();
+
+  let tags = getTags(id);
+  if(tags.length>0)
+  {	let tag_string="";
+		for (var i = 0; i<tags.length; i++) {
+			tag_string+=tags[i]+" "
+		}
+  	jQuery(notes_manager_scope+"#note-editor-form input[name=tags]").val(tag_string);
+  }
 
   var toolbarOptions = [
    [{ 'header': [1, 2, 3, false] }],
@@ -1540,6 +1678,8 @@ function saveNote()
 	let title = jQuery(notes_manager_scope+"#note-editor-form input[name=title]").val();
 	let noteHTML = jQuery(notes_manager_scope+"#note-editor .ql-editor").html();
 	let id = database_addNote(title, noteHTML);
+	let tag_string=jQuery(notes_manager_scope+"#note-editor-form input[name=tags]").val().trim();
+	updateTags(tag_string, id);
 	closeNoteEditor();
 	viewNote(id);
 }
@@ -1553,6 +1693,8 @@ function updateNote()
 	let updated = database_updateNote(id, title, noteHTML);
 	if(updated)
 	{
+	let tag_string=jQuery(notes_manager_scope+"#note-editor-form input[name=tags]").val().trim();
+	updateTags(tag_string, id);
 	closeNoteEditor();
 	viewNote(id);
 	}
@@ -1574,18 +1716,56 @@ function viewNote(id)
 	if(note)
 	{
 	let note_html = `<div class="note-viewer ql-container ql-editor"><div class="note-title">`+note.title+`</div>`+decrypt_string(appPass, note.note_html)+`</div>`;
+
+	//Adding tags;
+	let tag_html = `<div id="note_tags" class="row">`;
+	let tags=getTags(id);
+	if(tags.length>0)
+	{
+		tag_html+=getTagViewHTML(tags);
+	}
+	tag_html+=`</div>`;
+
+	if(Database.conf.notesManager.tagsPosition==1)
+	{
+		note_html = tag_html+note_html;
+	}
+	else
+	{
+		note_html = note_html+tag_html;
+	}
+
 	jQuery(notes_manager_scope+"#note").html(note_html).show();
 	jQuery(notes_manager_scope+"#note").attr("data-note-id",note.id);
+	jQuery(notes_manager_scope+"#tags").hide();
 	jQuery(notes_manager_scope+"#notes").hide();
+	
 	updateNoteTopBarforNoteViewing();
+
 	let bottomHTML = `Created: `+humanReadableDate(note.date)+` | Last modified: `+humanReadableDate(note.modified);
 	jQuery(notes_manager_scope+"#bottom-bar").html(bottomHTML);
 	state.action = "view_note";
 	state.data.id=id;
+	addNotesHistory(id);
 	}
-
 }
 
+function addNotesHistory(id)
+{
+	if(noteHistory.includes(id))
+	{
+		noteHistory = noteHistory.filter(function(e){
+			return e!=id;
+		});
+	}
+	
+	noteHistory.push(id);
+
+	if(noteHistory.length > 10)
+	{
+		noteHistory.shift();
+	}
+}
 
 
 function updateNoteTopBarforNoteViewing()
@@ -1593,6 +1773,9 @@ function updateNoteTopBarforNoteViewing()
 	let newHTML = `
 	<div class="top-bar-block option toggle-menu" title="Toggle menu">
 		<i class="fas fa-bars"></i>
+	</div>
+	<div class="home top-bar-block option" title="Home">
+	<i class="fas fa-home"></i>
 	</div>
 	<div class="back top-bar-block option" title="Back">
 	<i class="fas fa-chevron-left"></i>
@@ -1749,10 +1932,30 @@ function applyConfigCreateNotesBlocks(notes)
 }
 
 
+function notesBackButton()
+{
 
 
+	let e = noteHistory.pop();
+	if(noteHistory.length!=0)
+	{
+		e=noteHistory.pop();
+		if(e==0)
+		{
+			initializeNotesManager();
+		}
+		else
+		{
+			viewNote(e);
+		}
+	}
+	else
+	{
+		initializeNotesManager();
+	}
 
-
+	
+}
 
 
 
@@ -2362,4 +2565,91 @@ function showpassword(e)
   } else {
     x.type = "password";
   }
+}
+
+
+//Tag manager functions
+
+function getTags(id)
+{
+	let tags = [];
+	let note = Database.modules.notesManager.tags.filter(function(e){return e.id==id;});
+	if(note.length==1)
+	{
+		tags = note[0].tags;
+	}
+	return tags.sort();
+}
+
+function updateTags(tag_string, id){
+	console.log("Updating tags for "+id+" - "+tag_string);
+	tag_string =tag_string.toLowerCase().trim();
+	tag_string = tag_string.replace(/\s\s+/g, ' '); // To remove multiple white spaces
+
+	if(tag_string.length==0){return false;}
+
+	let tags=tag_string.split(" ").sort();
+	if(tags.length>0)
+	{
+	let note = Database.modules.notesManager.tags.filter(function(e){return e.id == id;});
+	if(note.length==1)
+	{
+		note[0].tags = tags;
+	}
+	else
+	{ console.log("No previous tags found");
+		let t = new tag();
+		t.id = id;
+		t.tags=tags;
+		Database.modules.notesManager.tags.push(t);
+	}
+	}
+}
+
+function getUniqueTags(){
+	let tags=[];
+	let t = Database.modules.notesManager.tags;
+	for (var i = 0; i < t.length; i++) {
+		for (var j = 0; j < t[i].tags.length; j++) {
+			if(!tags.includes(t[i].tags[j]))
+			{
+				tags.push(t[i].tags[j]);
+			}
+		}
+	}
+	return tags.sort();
+}
+
+
+function filterNotes(tags)
+{
+	return Database.modules.notesManager.notes.filter(function(e){
+
+		let note_tags = getTags(e.id);
+
+		let common = tags.filter(function(a){
+		return note_tags.includes(a);
+		});
+
+		if(common.length > 0)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+
+	});
+}
+
+function getTagViewHTML(tags)
+{
+	let html = `
+	`;
+	for (var i = 0; i < tags.length; i++) {
+		html+=`<span class="tag" data="`+tags[i]+`">`+tags[i]+`</span>`;
+	}
+
+	return html;
 }

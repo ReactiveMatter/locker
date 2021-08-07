@@ -393,3 +393,37 @@ body
 		width: 100%;
 	}
 }
+
+/* Tags */
+#note_tags
+{
+	margin:15px;
+	margin-left: 10px;
+	margin-right: 10px;
+}
+
+span.tag
+{
+	color: var(--gray-2);
+	border: 1px solid var(--gray-3);
+	padding: 0.1em 0.5em;
+	font-size: 0.8em;
+	margin: 0.3em;
+	border-radius: 0.1em;
+	line-height: 1;
+	cursor: pointer;
+}
+span.tag:hover, span.tag.active {
+	background-color: var(--gray-5);
+}
+
+#tags, .tags
+{
+	margin-left: -0.3em;
+	margin-right: -0.3em;
+}
+
+.notes-block .tags
+{
+
+}
