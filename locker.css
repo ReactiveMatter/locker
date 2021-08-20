@@ -406,14 +406,14 @@ span.tag
 {
 	color: var(--gray-2);
 	border: 1px solid var(--gray-3);
-	padding: 0.1em 0.5em;
-	font-size: 0.8em;
+	padding: 0.2em 0.5em;
+	font-size: 0.9em;
 	margin: 0.3em;
 	border-radius: 0.1em;
 	line-height: 1;
 	cursor: pointer;
 }
-span.tag:hover, span.tag.active {
+span.tag.active {
 	background-color: var(--gray-5);
 }
 
@@ -425,5 +425,26 @@ span.tag:hover, span.tag.active {
 
 .notes-block .tags
 {
-
+	margin-top: 0.5em;
 }
+
+/* Link suggestions */
+
+.linkDropdown
+{
+	margin-top: 15px;
+}
+
+a.linkSuggestion{
+    display: block;
+    padding: 5px;
+    cursor: pointer;
+}
+a.linkSuggestion:hover
+{
+	background-color: var(--gray-6);
+	text-decoration: none;
+}
+
+.ql-container a.ql-action, .ql-snow .ql-tooltip::before
+{display: none;}
