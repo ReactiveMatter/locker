@@ -89,7 +89,8 @@ class conf
 	  tagsPosition: 0, /*Added in version 2
 		0 for bottom and 1 for top
 	  */
-	  multitagFilter:false //Added in version 2
+	  multitagFilter:false, //Added in version 2
+	  multitagFilterBehaviour: 1 //Added in version 2; 0 is for OR and 1 is for AND
 		},
 		this.journalManager={sort: 3}
 		/* Sorting codes
@@ -290,7 +291,9 @@ function database_deleteJournal(id)
 
 
 
-//Starting of controller of the app
+//Starting of controller of the app 
+
+//Global variables
 
 var state = {
 	page: "lock",
@@ -313,6 +316,27 @@ var settings_scope="div[data-page='settings'] ";
 var appPass;
 var noteHistory = []; //0 means notes home.
 var tag_filter = [];
+var quillObject;
+var selection;
+
+var toolbarOptions = [
+   [{ 'header': [1, 2, 3, false] }],
+  [{ 'header': 1 }, { 'header': 2 }],
+  ['bold', 'italic', 'underline', 'strike'],       // toggled buttons
+  [{ 'script': 'sub'}, { 'script': 'super' }],
+  ['link', 'image'],
+  ['blockquote', 'code-block'],
+
+              // custom button values
+  [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+       // superscript/subscript
+  [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent 
+
+   [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
+  [{ 'align': [] }],
+
+  ['clean']                                         // remove formatting button
+];
 
 // ************************** Functions to run at start
 bindEvents();
@@ -711,6 +735,21 @@ function bindEvents()
 	jQuery('body').on("click",settings_scope+".btn.cancel", cancelSettings);
 	jQuery('body').on("click",settings_scope+".btn.restore", restoreSettings);
 
+
+	/* Internal links*/
+	jQuery('body').on("keyup", "#addlinkForm input[name=link]", function(){
+	internalLinkSuggestions();
+	});
+
+	jQuery('body').on("click","a[href^='https://note/']:not(div[contenteditable='true'] a)", function(e)
+	{	e.preventDefault();
+		goToInternalLink(this.href);
+	});
+
+	jQuery('body').on("click","a[href='about:blank']", function(e)
+	{	e.preventDefault();
+	});
+
 	
 }
 
@@ -821,7 +860,7 @@ function createDatabase()
 		notesManager: new notesManager()
 	}
 
-    state.page="password_manager";
+    state.page="dashboard";
     jQuery("input").val("");
     loadState(state);
 }
@@ -845,6 +884,8 @@ function addDatabase(data)
 				console.log("Imported file is of version 1 upgrading to version 2");
 				data.version = 2;
 				data.conf.notesManager.tagsPosition = Database.conf.notesManager.tagsPosition;
+				data.conf.notesManager.multitagFilter = Database.conf.notesManager.multitagFilter;
+				data.conf.notesManager.multitagFilterBehaviour = Database.conf.notesManager.multitagFilterBehaviour;
 				data.modules.notesManager.tags= Database.modules.notesManager.tags;
 			}
 
@@ -1490,6 +1531,10 @@ function initializeNotesManager()
 	{
 		jQuery(notes_manager_scope+"#tags").html(getTagViewHTML(uniqueTags));
 	}
+	else
+	{
+		jQuery(notes_manager_scope+"#tags").hide();
+	}
 
 	tag_filter = [];
 
@@ -1561,30 +1606,15 @@ function openAddNewNoteForm()
   jQuery(notes_manager_scope+"#tags").hide();
   jQuery(notes_manager_scope+"#notes").hide();
 
-  var toolbarOptions = [
-   [{ 'header': [1, 2, 3, false] }],
-  [{ 'header': 1 }, { 'header': 2 }],
-  ['bold', 'italic', 'underline', 'strike'],       // toggled buttons
-  [{ 'script': 'sub'}, { 'script': 'super' }],
-  ['link', 'image'],
-  ['blockquote', 'code-block'],
-
-              // custom button values
-  [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-       // superscript/subscript
-  [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent 
-
-  [{ 'color': [] }],          // dropdown with defaults from theme
-  [{ 'align': [] }],
-
-  ['clean']                                         // remove formatting button
-];
- var quillObject = new Quill('#note-editor', {
+ quillObject = new Quill('#note-editor', {
     theme: 'snow',
      modules: {
     toolbar: toolbarOptions
   }
   });
+
+//Adding custom link handler to quill
+ quillObject.getModule('toolbar').addHandler('link', addlink); 
 
 // jQuery(notes_manager_scope+"#note #note-editor .ql-editor").html("</br></br></br></br></br></br>");
  updateNoteTopBarforNoteEditing();
@@ -1637,30 +1667,16 @@ function editNote(id)
   	jQuery(notes_manager_scope+"#note-editor-form input[name=tags]").val(tag_string);
   }
 
-  var toolbarOptions = [
-   [{ 'header': [1, 2, 3, false] }],
-  [{ 'header': 1 }, { 'header': 2 }],
-  ['bold', 'italic', 'underline', 'strike'],       // toggled buttons
-  [{ 'script': 'sub'}, { 'script': 'super' }],
-  ['link', 'image'],
-  ['blockquote', 'code-block'],
-
-              // custom button values
-  [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-       // superscript/subscript
-  [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent 
-
-  [{ 'color': [] }],          // dropdown with defaults from theme
-  [{ 'align': [] }],
-
-  ['clean']                                         // remove formatting button
-];
- var quillObject = new Quill('#note-editor', {
+  
+ quillObject = new Quill('#note-editor', {
     theme: 'snow',
      modules: {
     toolbar: toolbarOptions
   }
   });
+
+ //Adding custom link handler to quill
+ quillObject.getModule('toolbar').addHandler('link', addlink); 
 
  jQuery(notes_manager_scope+"#note #note-editor .ql-editor").html(note_html);
  updateNoteTopBarforNoteEditing();
@@ -2064,30 +2080,16 @@ function openAddNewJournalForm()
   jQuery(journal_manager_scope+"#journal").html(htmlCode).show();
   jQuery(journal_manager_scope+"#journals").hide();
 
-  var toolbarOptions = [
-   [{ 'header': [1, 2, 3, false] }],
-  [{ 'header': 1 }, { 'header': 2 }],
-  ['bold', 'italic', 'underline', 'strike'],       // toggled buttons
-  [{ 'script': 'sub'}, { 'script': 'super' }],
-  ['link', 'image'],
-  ['blockquote', 'code-block'],
 
-              // custom button values
-  [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-       // superscript/subscript
-  [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent 
-
-  [{ 'color': [] }],          // dropdown with defaults from theme
-  [{ 'align': [] }],
-
-  ['clean']                                         // remove formatting button
-];
- var quillObject = new Quill('#journal-editor', {
+ quillObject = new Quill('#journal-editor', {
     theme: 'snow',
      modules: {
     toolbar: toolbarOptions
   }
   });
+
+ //Adding custom link handler to quill
+ quillObject.getModule('toolbar').addHandler('link', addlink); 
 
 jQuery(journal_manager_scope+".datepicker").datepicker({
     format: "dd/mm/yyyy",
@@ -2140,30 +2142,16 @@ function editJournal(id)
   jQuery(journal_manager_scope+"#journal").attr("data-journal-id",journal.id);
   jQuery(journal_manager_scope+"#journals").hide();
 
-  var toolbarOptions = [
-   [{ 'header': [1, 2, 3, false] }],
-  [{ 'header': 1 }, { 'header': 2 }],
-  ['bold', 'italic', 'underline', 'strike'],       // toggled buttons
-  [{ 'script': 'sub'}, { 'script': 'super' }],
-  ['link', 'image'],
-  ['blockquote', 'code-block'],
 
-              // custom button values
-  [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-       // superscript/subscript
-  [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent 
-
-  [{ 'color': [] }],          // dropdown with defaults from theme
-  [{ 'align': [] }],
-
-  ['clean']                                         // remove formatting button
-];
- var quillObject = new Quill('#journal-editor', {
+ quillObject = new Quill('#journal-editor', {
     theme: 'snow',
      modules: {
     toolbar: toolbarOptions
   }
   });
+
+//Adding custom link handler to quill
+ quillObject.getModule('toolbar').addHandler('link', addlink); 
 
  jQuery(journal_manager_scope+".datepicker").datepicker({
     format: "dd/mm/yyyy",
@@ -2442,6 +2430,34 @@ function createSettingsForm()
 		<input type="password" name="setting-database-password" class="form-control password">
 		</div>
 		<input type="checkbox" onclick="showpassword(this)"> <span style="margin-left:10px">Show password</span>
+
+		<div style="margin-top:15px;">
+		 <div class="input-group form-group">
+  	 <label for="setting-tag-position" class="col-sm-3 col-form-label col">Tag position</label>
+			<div class="col-sm-9 col">
+			<select class="form-select form-control" id="setting-tag-position">
+	  	<option value="0">Below the note</option>
+	 		<option value="1">Top of the note</option>
+			</select>
+			</div>
+			</div>
+
+		<div class="input-group form-group row">
+		
+  	<label for="setting-multitag-filter" class="form-check-label col-sm-3 col-form-label col">Allow multiple tag filter</label>
+  	<div class="col-sm-9 col">
+		<input type="checkbox" name="setting-multitag-filter">
+		</div>
+			<label for="setting-multitag-filter-behaviour" class="col-sm-3 col-form-label col">Multitag filter behaviour</label>
+			<div class="col-sm-9 col">
+			<select class="form-select form-control" id="setting-multitag-filter-behaviour">
+	  	<option value="0">OR</option>
+	 		<option value="1">AND</option>
+			</select>
+			</div>
+		</div>
+
+		</div>
 		</form>
 		<button type="button" class="btn btn-info option edit">Edit settings</button>
 	`;
@@ -2449,18 +2465,19 @@ function createSettingsForm()
 	jQuery(settings_scope+"#settings").html(settingsHTML);
 	restoreSettings();
 	jQuery(settings_scope+"#settings input").prop('disabled',true);
-
+	jQuery(settings_scope+"#settings select").prop('disabled',true);
 }
 
 function editSettings()
 {	var extraHTML =`
 		<button type="button" class="btn btn-success option save">Save</button>
-		<button type="button" class="btn btn-info option restore">Retore</button>
+		<button type="button" class="btn btn-info option restore">Restore</button>
 		<button type="button" class="btn btn-danger option cancel"">Cancel</button>
 		`;
 	jQuery(settings_scope+"#settings").append(extraHTML);
 	jQuery(settings_scope+"#settings .btn.edit").hide();
 	jQuery(settings_scope+"#settings input").prop('disabled',false);
+	jQuery(settings_scope+"#settings select").prop('disabled',false);
 
 }
 
@@ -2474,6 +2491,11 @@ function saveSettings()
 	{	
 		changePassword(newPassword);
 	}
+
+	Database.conf.notesManager.tagsPosition = jQuery(settings_scope+"#setting-tag-position").val();
+	Database.conf.notesManager.multitagFilter = jQuery(settings_scope+"#settings input[name=setting-multitag-filter]").prop('checked');
+	Database.conf.notesManager.multitagFilterBehaviour = jQuery(settings_scope+"#setting-multitag-filter-behaviour").val();
+
 	initializeSettings();
 	message("Settings saved successfully.","success");
 }
@@ -2484,6 +2506,18 @@ function restoreSettings()
 	jQuery(settings_scope+"#settings input[name=setting-username]").val(Database.username);
 	jQuery(settings_scope+"#settings input[name=setting-database-name]").val(Database.name);
 	jQuery(settings_scope+"#settings input[name=setting-database-password]").val(appPass);
+	jQuery(settings_scope+"#setting-tag-position").val(Database.conf.notesManager.tagsPosition);
+	jQuery(settings_scope+"#setting-multitag-filter-behaviour").val(Database.conf.notesManager.multitagFilterBehaviour);
+
+	if(Database.conf.notesManager.multitagFilter)
+	{
+		jQuery(settings_scope+"#settings input[name=setting-multitag-filter]").prop('checked', true);
+	}
+	else
+	{
+		jQuery(settings_scope+"#settings input[name=setting-multitag-filter]").prop('checked', false);	
+	}
+
 }
 
 function cancelSettings()
@@ -2521,7 +2555,7 @@ function initializeDashboard()
 {
 	jQuery("#main").attr("data-page","dashboard");
 	createTopBar();
-	jQuery(dashboard_scope+"#bottom-bar").html("Dashboard");
+	jQuery(dashboard_scope+"#bottom-bar").html("Dashboard (Locker v"+Database.version+")");
 	var viewHTML = `
 	<div class="alert alert-success" role="alert">
 	You have <span class="count">`+Database.modules.passwordManager.passwords.length+` passwords saved.
@@ -2631,14 +2665,17 @@ function filterNotes(tags)
 		return note_tags.includes(a);
 		});
 
-		if(common.length > 0)
+		if(Database.conf.notesManager.multitagFilter && (Database.conf.notesManager.multitagFilterBehaviour == 1))
 		{
-			return true;
+			if(common.length == tags.length) { return true; }
+			else	{	return false;	}
 		}
 		else
 		{
-			return false;
+			if(common.length > 0) { return true; }
+			else	{	return false;	}
 		}
+		
 
 	});
 }
@@ -2652,4 +2689,95 @@ function getTagViewHTML(tags)
 	}
 
 	return html;
+}
+
+
+/* Links for quill module */
+
+/*Custom link function for quill notes*/
+function addlink()
+{
+	console.log("Link clicked");
+
+	selection = quillObject.getSelection(); 
+
+
+	let modalHTML = `
+	<div class="form" id="addlinkForm">
+	<input type="text" name="link" class="form-control">
+	<label for="linkText" style="margin-top:10px">Link text (optional)</label>
+	<input type="text" name="linkText" class="form-control">
+	<div class="linkDropdown">
+	</div>
+	</div>
+
+	`;
+
+	let buttonHTML = `
+	<button type="button" class="btn btn-success" onClick="addlinkToEditor()">Enter</button>
+	`;
+
+	createModal("Link",modalHTML, buttonHTML);
+	showModal();
+	jQuery("#addlinkForm input[name=link]").focus();
+}
+
+function addlinkToEditor() {
+		let link = jQuery("#addlinkForm input[name=link]").val().trim(); 
+		let linkText = jQuery("#addlinkForm input[name=linkText]").val().trim(); 
+    let selectionText= quillObject.getText(selection.index, selection.length).trim();
+    
+    if(selectionText.length == 0)
+			{
+				 if(linkText.length == 0)
+					{
+						linkText = link;
+					}				
+			}
+			else
+			{
+				linkText = selectionText;
+			}
+
+
+		console.log(link+"-"+linkText);
+		quillObject.deleteText(selection.index, selectionText.length);
+		quillObject.insertText(selection.index, linkText, 'link', link);
+		console.log(link);
+		hideModal();
+}
+
+function internalLinkSuggestions(){
+	let q= jQuery("#addlinkForm input[name=link]").val().trim();
+	let matchingNotes = Database.modules.notesManager.notes.filter(function(e){
+		return e.title.toLowerCase().includes(q.toLowerCase());
+	});
+	matchingNotes.sort();
+	jQuery("#addlinkForm .linkDropdown").html("");
+
+	for (var i = 0; i < matchingNotes.length; i++) {
+		let t = `<a class="linkSuggestion" data="https://note/`+matchingNotes[i].id+`" onClick=selectInternalLink(this)>`+matchingNotes[i].title+`</a>
+		`;
+		jQuery("#addlinkForm .linkDropdown").append(t);
+	}
+
+}
+
+function selectInternalLink(e)
+{
+	jQuery("#addlinkForm input[name=link]").val(jQuery(e).attr("data"));
+	jQuery("#addlinkForm input[name=linkText]").val(jQuery(e).html());
+}
+
+function goToInternalLink(link)
+{
+	if(state.page!="notes_manager")
+	{
+		initializeNotesManager();
+	}
+	
+	id= link;
+	id=id.replace("https://note/","");
+	viewNote(id);
+	console.log("Internal link clicked");
 }
