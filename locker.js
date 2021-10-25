@@ -4,7 +4,7 @@ class database
 	{
 	this.name;
 	this.username;
-	this.version=2; //Added in version 1
+	this.version=3; //Added in version 1
 	this.modules={};
 	this.conf= new conf(); //Added in version 1
 	}
@@ -55,6 +55,7 @@ class notesManager
 	{
 	this.notes = [];
 	this.tags = []; //Added in version 2
+	this.colors = []; //Added in version 3
 	}
 }
 
@@ -78,6 +79,17 @@ class tag
 		this.id;
 		this.tags = [];
 	}
+}
+
+class color
+{
+	constructor(id, color)
+	{
+		this.id = id;
+		this.color = color;
+	}
+
+	/* Only prespecified colors will be allowed */
 }
 
 class conf
@@ -286,8 +298,34 @@ function database_deleteJournal(id)
 }
 
 
+function getColor(id)
+{
+	let colors = Database.modules.notesManager.colors;
+	for (var i = 0; i < colors.length; i++) {
+		if (colors[i].id ==id)
+		{
+			return colors[i].color;
+		}
+	}
 
+	Database.modules.notesManager.colors.push(new color(id, "white"));
+	return "white";
+}
 
+function setColor(id, value)
+{	
+	let colors = Database.modules.notesManager.colors;
+	for (var i = 0; i < colors.length; i++) {
+		if (colors[i].id ==id)
+		{
+			colors[i].color = value;
+			return;
+		}
+	}
+
+	let c = new color(id, value);
+	Database.modules.notesManager.colors.push(c);
+}
 
 
 
@@ -300,6 +338,26 @@ var state = {
 	dialog: false,
 	data:{}
 }; 
+
+var note_colors=[];
+note_colors["red"]="#ffebee";
+note_colors["blue"]="#e3f2fd";
+note_colors["green"]="#cfffdb";
+note_colors["white"]="#ffffff";
+note_colors["gray"]="#fafafa";
+note_colors["yellow"]="#fffde7";
+note_colors["purple"]="#f3e5f5";
+note_colors["pink"]="#fce4ec";
+
+var border_colors=[];
+border_colors["red"] = "#ffa2a288";
+border_colors["blue"]="#a4c7e388";
+border_colors["green"]="#a0fab288";
+border_colors["white"]="#cccccc";
+border_colors["gray"]="#d7d7d788";
+border_colors["yellow"]="#ffd56d88";
+border_colors["purple"]="#d394de88";
+border_colors["pink"]="#ff96ba88";
 
 
 var Database = new database();
@@ -334,8 +392,8 @@ var toolbarOptions = [
 
    [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
   [{ 'align': [] }],
-
-  ['clean']                                         // remove formatting button
+  ['clean'],                                      // remove formatting button
+  ["fullscreen"] 
 ];
 
 // ************************** Functions to run at start
@@ -750,6 +808,17 @@ function bindEvents()
 	{	e.preventDefault();
 	});
 
+	//Color selected
+	jQuery('body').on("click",".color-selector", function(e)
+	{
+		openColorSelector();
+	});
+
+	jQuery('body').on("click",".color-picker .color-box", function()
+	{
+		colorSelector(jQuery(this).attr("value"));
+		
+	});
 	
 }
 
@@ -889,33 +958,16 @@ function addDatabase(data)
 				data.modules.notesManager.tags= Database.modules.notesManager.tags;
 			}
 
+			if(data.version == 2)
+			{ // Upgrade old data to version 3 format with default values.
+				console.log("Imported file is of version 2 upgrading to version 3");
+				data.version = 3;
+				data.modules.notesManager.colors = Database.modules.notesManager.colors;
+
+
+			}
+
 			Database = data;
-
-		// Earlier implementation - 
-		// 	Database.name = data.name;
-		// 	Database.username = data.username;
-
-		// 	Database.modules.passwordManager = data.modules.passwordManager;
-		// 	Database.modules.journalManager = data.modules.journalManager;
-		// 	Database.modules.notesManager.notes = data.modules.notesManager.notes;
-		// 	if(typeof data.modules.notesManager.tags !=='undefined')
-		// 	{
-		// 		Database.modules.notesManager.tags = data.modules.notesManager.tags
-		// 	}
-		
-		
-		// //To import conf if it exists. Conf was introduced when version property was introduces. So earlier files will not have conf and version properties.
-		// if(typeof data.conf !== 'undefined' && !jQuery.isEmptyObject(data.conf))
-		// {	
-		// 	if(typeof data.version !== 'undefined')
-		// 	{
-		// 		if (data.version == Database.version)
-		// 		{
-		// 			Database.conf = data.conf;
-		// 		}
-		// 	}
-			
-		// }
 
 		return true;
 
@@ -1487,7 +1539,7 @@ function applyConfigCreatePasswordBlocks(passwords)
 
 /* Notes Manager */
 function initializeNotesManager()
-{
+{	
 	jQuery("#main").attr("data-page","notes_manager");
 	createNotesManagerTopBar();
 	let viewHTML=`
@@ -1563,9 +1615,15 @@ function createNotesView()
 }
 
 function addNotesBlock(note)
-{	
+{ 	
+	let bg = getColor(note.id);
+	if(bg=="white")
+	{
+		bg="gray";
+	}
+
 	var htmlCode =`
-		<div class="row notes-block" id="`+note.id+`">
+		<div class="row notes-block" id="`+note.id+`" style="background-color:`+note_colors[bg]+`;border-color:`+border_colors[bg]+`">
 		<div class="col">
 		<div class="title">`+note.title+`</div>
 		<div class="note-details">
@@ -1591,10 +1649,11 @@ function openAddNewNoteForm()
 		</div>
 		<div class="input-group form-group">
 		<div class="input-group-prepend">
-  	<span class="input-group-text">Tags</span>
-  	</div>
-  	<input type="text" name="tags" class="form-control" placeholder="Add tags seperated with space">
-  	</div>
+	  	<span class="input-group-text">Tags</span>
+	  	</div>
+	  	<input type="text" name="tags" class="form-control" placeholder="Add tags seperated with space">
+	  	<div class="color-selector" value="white" title="Color"></div>
+	  	</div>
 		<div id="note-editor">
 		</div>
 		<button type="button" class="btn btn-success option save">Save</button>
@@ -1605,6 +1664,22 @@ function openAddNewNoteForm()
   jQuery(notes_manager_scope+"#note").html(htmlCode).show();
   jQuery(notes_manager_scope+"#tags").hide();
   jQuery(notes_manager_scope+"#notes").hide();
+
+
+    colorSelector("white");
+
+ 	let ColorPickerCode = 
+	`<div class="color-picker" style="display:none;">
+	`;
+	for (var key in note_colors) {
+	ColorPickerCode= ColorPickerCode +`<div class="color-box" value="`+key+`" title="`+key+`" style="background-color:`+note_colors[key]+`;border-color:`+border_colors[key]+`"></div>`;
+	}
+	
+	ColorPickerCode= ColorPickerCode +`</div>`;
+
+	jQuery(".color-selector").after(ColorPickerCode);
+
+
 
  quillObject = new Quill('#note-editor', {
     theme: 'snow',
@@ -1642,10 +1717,11 @@ function editNote(id)
 		</div>
 		<div class="input-group form-group">
 		<div class="input-group-prepend">
-  	<span class="input-group-text">Tags</span>
-  	</div>
-  	<input type="text" name="tags" class="form-control" placeholder="Add tags seperated with space">
-  	</div>
+	  	<span class="input-group-text">Tags</span>
+	  	</div>
+	  	<input type="text" name="tags" class="form-control" placeholder="Add tags seperated with space">
+	  	<div class="color-selector" value="white" title="Color"></div>
+	  	</div>
 		<div id="note-editor">
 		</div>
 		<button type="button" class="btn btn-success option update">Save</button>
@@ -1658,6 +1734,20 @@ function editNote(id)
   jQuery(notes_manager_scope+"#tags").hide();
   jQuery(notes_manager_scope+"#notes").hide();
 
+  
+
+
+ 	let ColorPickerCode = 
+	`<div class="color-picker" style="display:none;">
+	`;
+	for (var key in note_colors) {
+	ColorPickerCode= ColorPickerCode +`<div class="color-box" value="`+key+`" title="`+key+`" style="background-color:`+note_colors[key]+`;border-color:`+border_colors[key]+`"></div>`;
+	}
+	
+	ColorPickerCode= ColorPickerCode +`</div>`;
+
+	jQuery(".color-selector").after(ColorPickerCode);
+
   let tags = getTags(id);
   if(tags.length>0)
   {	let tag_string="";
@@ -1665,9 +1755,12 @@ function editNote(id)
 			tag_string+=tags[i]+" "
 		}
   	jQuery(notes_manager_scope+"#note-editor-form input[name=tags]").val(tag_string);
+
+
   }
 
   
+
  quillObject = new Quill('#note-editor', {
     theme: 'snow',
      modules: {
@@ -1685,6 +1778,11 @@ function editNote(id)
 }
 jQuery("div[contenteditable='true']").css("max-height",(jQuery("#view").height() - 225)+"px");
 
+	//remove note-bg and apply color to editor
+  	jQuery(".note-bg").remove();
+  	colorSelector(getColor(id));
+	
+
 }
 
 
@@ -1695,7 +1793,10 @@ function saveNote()
 	let noteHTML = jQuery(notes_manager_scope+"#note-editor .ql-editor").html();
 	let id = database_addNote(title, noteHTML);
 	let tag_string=jQuery(notes_manager_scope+"#note-editor-form input[name=tags]").val().trim();
+	let color = jQuery(".color-selector").first().attr("value");
+
 	updateTags(tag_string, id);
+	setColor(id, color);
 	closeNoteEditor();
 	viewNote(id);
 }
@@ -1705,12 +1806,14 @@ function updateNote()
 	let id=jQuery(notes_manager_scope+"#note-editor-form input[name=id]").val();
 	let title = jQuery(notes_manager_scope+"#note-editor-form input[name=title]").val();
 	let noteHTML = jQuery(notes_manager_scope+"#note-editor .ql-editor").html();
+	let color = jQuery(".color-selector").first().attr("value");
 
 	let updated = database_updateNote(id, title, noteHTML);
 	if(updated)
 	{
 	let tag_string=jQuery(notes_manager_scope+"#note-editor-form input[name=tags]").val().trim();
 	updateTags(tag_string, id);
+	setColor(id, color);
 	closeNoteEditor();
 	viewNote(id);
 	}
@@ -1755,14 +1858,24 @@ function viewNote(id)
 	jQuery(notes_manager_scope+"#note").attr("data-note-id",note.id);
 	jQuery(notes_manager_scope+"#tags").hide();
 	jQuery(notes_manager_scope+"#notes").hide();
-	
+
 	updateNoteTopBarforNoteViewing();
+
+	
 
 	let bottomHTML = `Created: `+humanReadableDate(note.date)+` | Last modified: `+humanReadableDate(note.modified);
 	jQuery(notes_manager_scope+"#bottom-bar").html(bottomHTML);
 	state.action = "view_note";
 	state.data.id=id;
 	addNotesHistory(id);
+
+
+	//Applying color to the note
+	let noteColorBG = `
+	<div class="note-bg" style="position:absolute;top:0px;left:0px;z-index:-100;width:100%;height:100%;background-color:`+note_colors[getColor(id)]+`"></div>
+	`;
+	jQuery("#note").after(noteColorBG);
+
 	}
 }
 
@@ -2780,4 +2893,20 @@ function goToInternalLink(link)
 	id=id.replace("https://note/","");
 	viewNote(id);
 	console.log("Internal link clicked");
+}
+
+function colorSelector(color)
+{
+	jQuery(".color-selector").attr("value", color);
+	jQuery(".color-selector").css("background-color",note_colors[color]);
+	jQuery(".color-selector, .ql-toolbar, #note-editor").css("border-color",border_colors[color]);
+	console.log(note_colors[color]);
+	jQuery(".ql-editor").css("background-color",note_colors[color]);
+	jQuery(".color-picker").hide();
+}
+
+function openColorSelector()
+{	
+	jQuery(".color-picker").toggle();
+
 }
