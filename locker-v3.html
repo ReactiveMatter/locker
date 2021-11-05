@@ -1308,28 +1308,30 @@ body
 #note-editor, #journal-editor
 {
 	margin-bottom: 20px;
-	/*min-height: 200px;*/
 }
 
 
-.note-viewer.ql-editor, #journal-viewer.ql-editor
+.note-viewer.ql-editor, .journal-viewer.ql-editor
 {
 	padding-top: 0px;
-	border-bottom-right-radius: 3px;
-	border-bottom-left-radius: 3px;
+
 }
-.note-viewer.ql-toolbar, #journal-viewer.toolbar
+.ql-toolbar.ql-snow
 {
 	border-top-right-radius: 3px;
 	border-top-left-radius: 3px;
+	top: 0px;
+	z-index: 100;
+	background: white;
 }
 
 
-.ql-container
+.ql-container.ql-snow, .ql-container
 {
 	font-family: inherit;
 	font-size: inherit;
-	
+	border-bottom-right-radius: 3px;
+	border-bottom-left-radius: 3px;
 }
 
 .notes-block .title, .journal-block .title
@@ -1469,7 +1471,7 @@ a.linkSuggestion:hover
 	top: 3rem;
 	right: -0.2rem;
 	position: absolute;
-	z-index: 100;
+	z-index: 200;
 	background: white;
 	border: 1px solid #ced4da;
 	padding: 0.2rem;
@@ -1480,7 +1482,7 @@ a.linkSuggestion:hover
 }
 
 /* Formatting for note text */
-.ql-editor p
+.ql-editor p, .ql-editor ol, .ql-editor ul, .ql-editor h1, .ql-editor h2, .ql-editor h3
 {
 	margin-bottom: 10px;
 }
@@ -2088,8 +2090,7 @@ var toolbarOptions = [
 
    [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
   [{ 'align': [] }],
-  ['clean'],                                      // remove formatting button
-  ["fullscreen"] 
+  ['clean']                                  // remove formatting button
 ];
 
 // ************************** Functions to run at start
@@ -3390,7 +3391,7 @@ function openAddNewNoteForm()
 // jQuery(notes_manager_scope+"#note #note-editor .ql-editor").html("</br></br></br></br></br></br>");
  updateNoteTopBarforNoteEditing();
  state.action = "create_note";
- jQuery("div[contenteditable='true']").css("max-height",(jQuery("#view").height() - 225)+"px");
+ jQuery(".ql-toolbar").addClass("position-sticky");
 
 }
 
@@ -3472,7 +3473,7 @@ function editNote(id)
  state.action = "edit_note";
  state.data.id=id;
 }
-jQuery("div[contenteditable='true']").css("max-height",(jQuery("#view").height() - 225)+"px");
+jQuery(".ql-toolbar").addClass("position-sticky");
 
 	//remove note-bg and apply color to editor
   	jQuery(".note-bg").remove();
@@ -3913,7 +3914,8 @@ jQuery(journal_manager_scope+".datepicker").datepicker("setDate",new Date());
 // jQuery(journal_manager_scope+"#journal #journal-editor .ql-editor").html("</br></br></br></br></br></br>");
  updateJournalTopBarforJournalEditing();
  state.action = "create_journal";
- jQuery("div[contenteditable='true']").css("max-height",(jQuery("#view").height() - 275)+"px");
+ jQuery(".ql-toolbar").addClass("position-sticky");
+
 
 }
 
@@ -3977,7 +3979,7 @@ function editJournal(id)
  state.data.id=id;
 }
 
-jQuery("div[contenteditable='true']").css("max-height",(jQuery("#view").height() - 275)+"px");
+jQuery(".ql-toolbar").addClass("position-sticky");
 
 
 }
