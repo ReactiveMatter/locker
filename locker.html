@@ -1009,6 +1009,43 @@
 	--sidebar-item-active-color:var(--dark-blue-2);
 	--sidebar-item-hover-color:var(--dark-blue-3);
 	--sidebar-width:200px;
+
+	/* Defining colors */
+	--red: #ff0000;
+	--red-background: #ffebee;
+	--red-h: #ffa2a288;
+	--red-sh: #ffa2a288;
+	--red-border: #f99494;
+	--green: #00ff00;
+	--green-background: #d5fdf4;
+	--green-h: #a0fab288;
+	--green-sh: #a0fab288;
+	--green-border: #00e39d;
+	--blue: #0000ff;
+	--blue-background: #e3f2fd;
+	--blue-h: #a4c7e388;
+	--blue-sh: #a4c7e388;
+	--blue-border: #04b7c3;
+	--gray: #888888;
+	--gray-background: #fafafa;
+	--gray-h: #d7d7d788;
+	--gray-sh: #d7d7d788;
+	--gray-border: #c7c7c7;
+	--yellow: #ffff00;
+	--yellow-background: #fffde7;
+	--yellow-h: #ffd56d88;
+	--yellow-sh: #ffd56d88;
+	--yellow-border: #efc55d;
+	--purple: #a020f0;
+	--purple-background: #f3e5f5;
+	--purple-h: #d394de88;
+	--purple-sh: #d394de88;
+	--purple-border:#c384ce;
+	--pink: #ffc0cb;
+	--pink-background: #fce4ec;
+	--pink-h: #ff96ba88;
+	--pink-sh: #ff96ba88;
+	--pink-border: #ef86aa;
 }
 
 html, body, #root, #main {
@@ -1365,9 +1402,8 @@ body
 /* Tags */
 #note_tags
 {
-	margin:15px;
-	margin-left: 10px;
-	margin-right: 10px;
+	margin-top:15px;
+	margin-bottom:15px;
 }
 
 span.tag
@@ -1452,11 +1488,11 @@ a.linkSuggestion:hover
 /* Formatting for note text */
 
 
-.ql-editor p
+.ql-editor p, .ql-snow .ql-editor pre.ql-syntax, .ql-snow .ql-editor blockquote
 {
 	margin-bottom: 10px;
 }
-.ql-editor p:last-child, .ql-editor ol:last-child, .ql-editor ul:last-child
+.ql-editor p:last-child, .ql-editor ol:last-child, .ql-editor ul:last-child, .ql-editor pre:last-child, .ql-editor blockquote:last-child
 {
 	margin-bottom: 0px;
 }
@@ -1478,6 +1514,26 @@ a.linkSuggestion:hover
 .ql-editor ol li:not(.ql-direction-rtl), .ql-editor ul li:not(.ql-direction-rtl)
 {
 	padding-left: unset;
+}
+
+.ql-snow .ql-editor h1, .ql-snow .ql-editor h2, .ql-snow .ql-editor h3
+{
+	font-weight: lighter;
+	margin-top: 15px;
+	margin-bottom: 15px;
+}
+
+.ql-snow .ql-editor h1
+{
+	font-size: 1.75em;
+}
+.ql-snow .ql-editor h2
+{
+	font-size: 1.5em;
+}
+.ql-snow .ql-editor h3
+{
+	font-size: 1.15em;
 }
 
 #trace ul
@@ -1587,6 +1643,269 @@ a.linkSuggestion:hover
 	margin-bottom: 10px;
 }
 
+.ql-fullscreen::after
+{
+	content: "FS";
+	opacity:0.7;
+	font-weight:bold;
+}
+
+.ql-box::after
+{
+	content: "Box";
+	opacity:0.7;
+	font-weight:bold;
+}
+.ql-box-setting::after
+{
+	content: "BoxS";
+	opacity:0.7;
+	font-weight:bold;
+}
+.ql-snow.ql-toolbar button.ql-fullscreen:focus, .ql-snow.ql-toolbar button:focus
+{
+	outline: none;
+	color:black !important;
+}
+
+/* Implementation of boxes */
+
+.box
+{
+	margin-bottom:15px;
+    background: var(--gray-background);
+    border: 1px solid var(--gray-border);
+    border-radius:4px;
+    padding: 0.5em 1em;
+    box-sizing:border-box;
+    color:inherit;
+    overflow:visible;
+}
+.box.red
+{
+    background: var(--red-background);
+    border: 1px solid var(--red-border);
+
+     table.table-bordered th, table.table-bordered td
+    {
+        border-color:var(--red-border) !important;
+    }
+     table.table-bordered th
+    {
+        background:var(--red-sh) !important;
+    }
+}
+
+.box.blue
+{
+    background: var(--blue-background);
+    border: 1px solid var(--blue-border);
+
+     table.table-bordered th, table.table-bordered td
+    {
+        border-color:var(--blue-border) !important;
+    }
+     table.table-bordered th
+    {
+        background: var(--blue-sh) !important;
+    }
+}
+
+.box.green
+{
+    background:var(--green-background);
+    border: 1px solid var(--green-border);
+
+     table.table-bordered th, table.table-bordered td
+    {
+        border-color:var(--green-border) !important;
+    }
+     table.table-bordered th
+    {
+        background: var(--green-sh) !important;
+    }
+}
+
+.box.yellow
+{
+    background: var(--yellow-background);
+    border: 1px solid var(--yellow-border);
+
+     table.table-bordered th, table.table-bordered td
+    {
+        border-color:var(--yellow-border) !important;
+    }
+     table.table-bordered th
+    {
+        background: var(--yellow-sh) !important;
+    }
+}
+.box.pink
+{
+    background: var(--pink-background);
+    border: 1px solid var(--pink-border);
+
+     table.table-bordered th, table.table-bordered td
+    {
+        border-color:var(--pink-border) !important;
+    }
+     table.table-bordered th
+    {
+        background: var(--pink-sh) !important;
+    }
+}
+.box.purple
+{
+    background: var(--purple-background);
+    border: 1px solid var(--purple-border);
+
+     table.table-bordered th, table.table-bordered td
+    {
+        border-color:var(--purple-border) !important;
+    }
+    table.table-bordered th
+    {
+        background: var(--purple-sh) !important;
+    }
+}
+
+/* Side boxes */
+
+.box.side
+{
+    width:300px;
+    margin-top:0;
+    margin-bottom:0.5em;
+    float:right; 
+}
+.box.side.big
+{
+    width:400px;
+}
+.box.side
+{
+    margin-left:1em;
+}
+.box.side.left
+{	margin-left:0em;
+    margin-right:1em;
+    float: left;
+}
+
+.box img
+{
+    max-width:100%;
+    height:auto;
+}
+
+/* Boxes with heading */
+.box>.box-heading, .box>.h
+{
+    margin-top:-0.5em;
+    margin-left: -1em;
+    margin-right: -1em;
+    margin-bottom: 1em;
+    padding:0.5em 1em;
+    border-bottom:1px solid;
+}
+.box>.box-heading>p, .box>.h>p
+{
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+.box>.box-heading, .box>.h
+{
+    background: var(--gray-h);
+    border-color: var(--gray-border);
+}
+.box.red>.box-heading, .box.red>.h
+{
+    background: var(--red-h);
+    border-color:var(--red-border);
+}
+.box.green>.box-heading, .box.green>.h
+{
+    background: var(--green-h);
+    border-color: var(--green-border);
+}
+.box.blue>.box-heading, .box.blue>.h
+{
+    background: var(--blue-h);
+    border-color: var(--blue-border);
+}
+.box.yellow>.box-heading, .box.yellow>.h
+{
+    background: var(--yellow-h);
+    border-color: var(--yellow-border);
+}
+.box.pink>.box-heading, .box.pink>.h
+{
+    background: var(--pink-h);
+    border-color:var(--pink-border);
+}
+.box.purple>.box-heading, .box.purple>.h
+{
+    background: var(--pink-h);
+    border-color: var(--pink-border);
+}
+
+/* Sub heading in boxes */
+.box>.box-sub-heading, .box>.sh
+{
+    background: var(--gray-sh);
+    padding: 0.25em 0.75em;
+    margin-bottom: 1em;
+}
+.box>.box-sub-heading:not(:first-child), .box>.sh:not(:first-child)
+{
+    margin-top:1em;
+}
+.box>.box-sub-heading>p, .box>.sh>p
+{
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+.box.red>.box-sub-heading, .box.red>.sh
+{
+    background: var(--red-sh);
+}
+.box.green>.box-sub-heading, .box.green>.sh
+{
+    background: var(--green-sh);
+}
+.box.blue>.box-sub-heading, .box.blue>.sh
+{
+    background: var(--blue-sh);
+}
+.box.yellow>.box-sub-heading, .box.yellow>.sh
+{
+    background: var(--yellow-sh);
+}
+.box.pink>.box-sub-heading, .box.pink>.sh
+{
+    background: var(--pink-sh);
+}
+.box.purple>.box-sub-heading, .box.purple>.sh
+{
+    background: var(--purple-sh);
+}
+
+/* For mobile screens */
+@media screen and (max-width: 767px), print and (max-width:467px)
+{ .box.side
+{
+    width:100%;
+    margin-bottom:1em;
+}
+.box.side.left, .box.side.right
+{
+    float:none;
+    margin-left: unset;
+    margin-right: unset;
+}
+}
+
+
 /*locker.css end*/
 
 </style>
@@ -1667,6 +1986,7 @@ a.linkSuggestion:hover
 <p>This is one of the safest app. No information is stored on any server. When you add any information, it is temporarily stored in your browser. It is lost once you refresh the page of close the browser. To reuse the information you must export it and store it whereever you like.
 </p>
 </div>
+<div id="version" style="text-align:right; color:white;"></div>
 </div>
 </div>
 
@@ -2215,12 +2535,26 @@ var toolbarOptions = [
 
    [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
   [{ 'align': [] }],
-  ['clean']                                  // remove formatting button
+  ['clean'],                                 // remove formatting button
+  ['fullscreen'],
+  ['box'],
+  ['box-setting']
 ];
 
 // ************************** Functions to run at start
 bindEvents();
 loadState(state);
+
+//For Quill Editor
+var Block = Quill.import('blots/block');
+
+class box extends Block {}
+box.blotName = 'box';
+box.className = 'box';
+box.tagName = 'div';
+
+Quill.register(box);
+
 
 //***************************
 
@@ -2560,6 +2894,12 @@ function bindEvents()
 	
 	});
 
+	/*For clicking tag on noteview*/
+	jQuery('body').on("click", notes_manager_scope+"#note_tags .tag", function(){
+	let t=jQuery(this).attr("data");
+	initializeNotesManager();
+	jQuery(notes_manager_scope+"#tags .tag[data="+t+"]").click();	
+	});
 
 	/* For journal manager */
 
@@ -2659,6 +2999,12 @@ function bindEvents()
 	{	e.preventDefault();
 	});
 
+
+	/*Quill toolbar */
+	jQuery('body').on("click",'.ql-fullscreen', quillFullscreen); 
+	jQuery('body').on("click",'.ql-box-setting', quillBoxSetting);
+
+
 	//Color selected
 	jQuery('body').on("click",".color-selector", function(e)
 	{
@@ -2698,7 +3044,7 @@ function exportDatabase(DBObject) {
 
 function saveDatabase() //Save to local storage
 {	
-	localStorage.setItem(Database.name,encrypt_object(appPass, Database));
+	localStorage.setItem("LOCKER_LOCAL:"+Database.name,encrypt_object(appPass, Database));
 	floatingMessage("Saved");
 }
 
@@ -2853,7 +3199,7 @@ function loadState(newstate)
 	jQuery("#view").html("");
 	jQuery("#root").hide();
 	jQuery("#lock-screen").show();
-	jQuery("#lock-screen .container").append(`<div style="text-align:right; color:white">Version `+Database.version+`</div>`);
+	jQuery("#lock-screen .container #version").html(`Version `+Database.version);
 
 	}
 	else if(newstate.page=="dashboard")
@@ -3003,7 +3349,7 @@ function createNotesManagerTopBar()
 	}
 	topBarHTML+=`
 	<div class="top-bar-block" id="search">
-	<input type="text" name="search" placeholder="Search">
+	<input type="text" name="search" placeholder="Search" autocomplete="off">
 	</div>
 	<div class="add top-bar-block option">
 		<i class="fas fa-plus"></i>
@@ -3020,7 +3366,7 @@ function createTopBar()
 		<i class="fas fa-bars"></i>
 	</div>
 	<div class="top-bar-block" id="search">
-		<input type="text" name="search" placeholder="Search">
+		<input type="text" name="search" placeholder="Search" autocomplete="off">
 	</div>
 	<div class="add top-bar-block option">
 		<i class="fas fa-plus"></i>
@@ -3568,7 +3914,6 @@ function openAddNewNoteForm()
 // jQuery(notes_manager_scope+"#note #note-editor .ql-editor").html("</br></br></br></br></br></br>");
  updateNoteTopBarforNoteEditing();
  state.action = "create_note";
- jQuery(".ql-toolbar").addClass("position-sticky");
 
 }
 
@@ -3643,13 +3988,12 @@ function editNote(id)
   });
 
  //Adding custom link handler to quill
- quillObject.getModule('toolbar').addHandler('link', addlink); 
+ quillObject.getModule('toolbar').addHandler('link', addlink);
 
  jQuery(notes_manager_scope+"#note #note-editor .ql-editor").html(note_html);
  state.action = "edit_note";
  state.data.id=id;
 }
-jQuery(".ql-toolbar").addClass("position-sticky");
 
 	//remove note-bg and apply color to editor
   	jQuery(".note-bg").remove();
@@ -3710,7 +4054,7 @@ function viewNote(id)
 	let note_html = `<div class="note-viewer ql-container ql-editor"><div class="note-title">`+note.title+`</div>`+decrypt_string(appPass, note.note_html)+`</div>`;
 
 	//Adding tags;
-	let tag_html = `<div id="note_tags" class="row">`;
+	let tag_html = `<div id="note_tags" class="row tags">`;
 	let tags=getTags(id);
 	if(tags.length>0)
 	{
@@ -3748,8 +4092,10 @@ function viewNote(id)
 
 	}
 
+	jQuery("#note").addClass("ql-snow");
 	updateNoteTopBarforNoteViewing();
 	updateTrace();
+	applyWrapper();
 }
 
 function addNotesHistory(id)
@@ -3816,7 +4162,7 @@ function updateNoteTopBarforNoteViewing()
 	<i class="fas fa-chevron-left"></i>
 	</div>
 	<div class="top-bar-block" id="search">
-		<input type="text" name="search" placeholder="Search"></input>
+		<input type="text" name="search" placeholder="Search" autocomplete="off"></input>
 		<div class="dropdown-menu"></div>
 	</div>
 	<div class="edit top-bar-block option" title="Edit">
@@ -3853,7 +4199,7 @@ function updateNoteTopBarforNoteEditing()
 	<i class="fas fa-chevron-left"></i>
 	</div>
 	<div class="top-bar-block" id="search">
-	<input type="text" name="search" placeholder="Search"></input>
+	<input type="text" name="search" placeholder="Search" autocomplete="off"></input>
 	<div class="dropdown-menu"></div>
 	</div>
 	<div class="save top-bar-block option" title="Save">
@@ -4181,7 +4527,6 @@ jQuery(journal_manager_scope+".datepicker").datepicker("setDate",new Date());
 // jQuery(journal_manager_scope+"#journal #journal-editor .ql-editor").html("</br></br></br></br></br></br>");
  updateJournalTopBarforJournalEditing();
  state.action = "create_journal";
- jQuery(".ql-toolbar").addClass("position-sticky");
 
 
 }
@@ -4246,8 +4591,6 @@ function editJournal(id)
  state.data.id=id;
 }
 
-jQuery(".ql-toolbar").addClass("position-sticky");
-
 
 }
 
@@ -4304,7 +4647,7 @@ function viewJournal(id)
 	state.data.id=id;
 	}
 
-	
+	jQuery("#note").addClass("ql-snow");
 }
 
 
@@ -4870,6 +5213,59 @@ function openColorSelector()
 
 }
 
+function quillFullscreen()
+{	if(jQuery("#ql-fs").length==0)
+	{jQuery("head").append(`<style id="ql-fs">#side-nav-bar, #top-bar, #bottom-bar, .form .input-group, .form .btn, #trace, #tags {display:none;}
+		#view>div:first-child, #note-editor, #journal-editor{margin:0px;}
+		.ql-toolbar.ql-snow{position: sticky; border: none; border-bottom:1px solid #ccc;}
+		.ql-container.ql-snow{border:none;}
+		 #view{padding:0px;}
+		</style>
+		`);
+	}
+	else
+	{
+		jQuery("#ql-fs").remove();
+	}
+
+}
+
+var QuillFocusElement;
+
+function quillBoxSetting()
+{	
+	QuillFocusElement =quillObject.selection.getNativeRange().start.node.parentElement.closest(".box");
+	if(QuillFocusElement == null){return 0;}
+	let modalHTML = `
+	<div class="form">
+	<input type="text" name="box-classes" class="form-control">
+	</div>
+	`;
+	let buttonHTML = `<button type="button" class="btn btn-info" onclick="applySettingsToBox()">Save</button>`;
+	createModal("Box setting",modalHTML,buttonHTML);
+	jQuery("input[name=box-classes]").val(QuillFocusElement.classList.value);
+	showModal();
+}
+
+function applySettingsToBox()
+{	if(jQuery("input[name=box-classes]").val().trim().length==0)
+	{QuillFocusElement.removeAttribute("class");
+	QuillFocusElement.classList.add("box");
+	}
+	else{
+	let classes = jQuery("input[name=box-classes]").val().trim().split(" ");
+	QuillFocusElement.removeAttribute("class");
+	QuillFocusElement.classList.add("box");
+
+	for(let i=0;i<classes.length;i++)
+	{	if(classes[i]=="box"){}
+		else{QuillFocusElement.classList.add(classes[i]);}
+	}
+	}
+	hideModal();
+
+}
+
 function setFavorite()
 {
 	Database.conf.notesManager.favorite = state.data.id;
@@ -4879,9 +5275,10 @@ function setFavorite()
 
 /* Local storage manager function */
 function openLocalStorageManager()
-{
+{	
 	jQuery("#local-storage").css("display","block");
 	let localStorageHTML=``;
+	let localDBcount = 0;
 	if(localStorage.length==0)
 	{
 		localStorageHTML+=`<div class="alert alert-warning" role="alert">Local storage is empty</div>`;
@@ -4890,24 +5287,27 @@ function openLocalStorageManager()
 	{
 		
 		for(let i=0;i<localStorage.length;i++)
-		{	localStorageHTML+=`<div class="alert alert-success" role="alert">`+localStorage.key(i)+` :: <a style="color:blue;" onclick="showPasswordDialogForLoad('`+localStorage.key(i)+`')">Load</a><a style="color:red;" onclick="deleteFromLocalStorage('`+localStorage.key(i)+`')">Delete</a></div>`;
+		{	
+			if(localStorage.key(i).includes("LOCKER_LOCAL:"))
+			{
+			localStorageHTML+=`<div class="alert alert-success" role="alert">`+localStorage.key(i).replace("LOCKER_LOCAL:","")+` :: <a style="color:blue;" onclick="showPasswordDialogForLoad('`+localStorage.key(i)+`')">Load</a><a style="color:red;" onclick="confirmDeleteFromLocalStorage('`+localStorage.key(i)+`')">Delete</a></div>`;
+			localDBcount++;
+			}
 		}
+
+		if(localDBcount ==0)
+		{
+			localStorageHTML+=`<div class="alert alert-warning" role="alert">Local storage is empty</div>`;
+		}
+
 		
 	}
 	localStorageHTML+=`<div style="text-align:center">
-	<button type="button" class="btn btn-info" onclick="clearLocalStorage()">Clear</button>
+	<button type="button" class="btn btn-info" onclick="confirmClearLocalStorage()">Clear</button>
 	<button type="button" class="btn btn-danger" onclick="closeLocalStorageManager()">Close</button>
 	</div>`;
 	jQuery("#local-storage-content").html(localStorageHTML);
 
-}
-
-function clearLocalStorage()
-{
-	localStorage.clear();
-	closeLocalStorageManager();
-	openLocalStorageManager();
-	floatingMessage("Local storage cleared");
 }
 
 function showPasswordDialogForLoad(key)
@@ -4924,7 +5324,7 @@ function showPasswordDialogForLoad(key)
 	<button type="button" class="btn btn-success" onClick="loadFromLocalStorage('`+key+`')">Enter</button>
 	`;
 
-	createModal("Database password for "+key,modalHTML,buttonHTML);
+	createModal("Database password for "+key.replace("LOCKER_LOCAL:",""),modalHTML,buttonHTML);
 	showModal();
 
 }
@@ -4954,12 +5354,50 @@ function loadFromLocalStorage(key)
 	}
 }
 
-function deleteFromLocalStorage(key)
+function confirmDeleteFromLocalStorage(key)
 {
-	localStorage.removeItem(key);
+	let modalHTML = `
+	Are you sure you want to delete this from local storage? Once deleted it cannot be recovered ever.
+	`;
+	let buttonHTML = `<button type="button" class="btn btn-danger" onclick="deleteFromLocalStorage('`+key+`')">Delete</button>
+	`;
+
+	createModal("Confirm delete",modalHTML,buttonHTML);
+	showModal();
+}
+
+function confirmClearLocalStorage()
+{
+	let modalHTML = `
+	Are you sure you want to clear local storage? Once data is deleted, it cannot be recovered ever.
+	`;
+	let buttonHTML = `<button type="button" class="btn btn-danger" onclick="clearLocalStorage()">Delete</button>
+	`;
+
+	createModal("Confirm delete",modalHTML,buttonHTML);
+	showModal();
+}
+
+function deleteFromLocalStorage(key)
+{	localStorage.removeItem(key);
+	hideModal();
 	closeLocalStorageManager();
 	openLocalStorageManager();
+}
 
+function clearLocalStorage()
+{
+	for(var i=0;i<localStorage.length;i++)
+	{
+		if(localStorage.key(i).includes("LOCKER_LOCAL:"))
+		{
+			localStorage.removeItem(localStorage.key(i));
+		}
+	}
+	hideModal();
+	closeLocalStorageManager();
+	openLocalStorageManager();
+	floatingMessage("Local storage cleared");
 }
 
 function closeLocalStorageManager()
@@ -4973,6 +5411,22 @@ let floatingHTML=`<div id="floating-message" class="alert alert-success" style="
 	jQuery("body").append(floatingHTML);
 	setTimeout(function(){jQuery("#floating-message").remove();},777);
 }
+
+function applyWrapper()
+{
+	jQuery("p:contains(#div)").each(function(){
+		let classes=jQuery(this).html().trim().replace("#div","").trim();
+		jQuery(this).replaceWith(`<div class="`+classes+`">`);
+	});
+	
+
+	jQuery("p:contains(#end)").each(function(){
+		jQuery(this).replaceWith(document.createElement(`</div>`));
+	});
+}
+
+
+
 
 /* Locker.js ends */
 
