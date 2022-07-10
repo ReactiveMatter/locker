@@ -19,9 +19,11 @@ This a offline html app to save your passwords, personal notes and journals.
 I developed this app for personal use. Currently it serving my needs fully, hence I do not intend to develop it further. If you like the concept and want to develop it further, you are welcome to fork it.
 
 **Change log**
+* Version 5
+  * Added colors for notes
 * Version 4
-  * Introduced visited notes trace bar
-  * Introduced favorite page
+  * Added visited notes trace bar
+  * Added favorite page feature
   * Added search box in the top bar in notes
 * Version 3: Introduced note colors
 * Version 2: 
