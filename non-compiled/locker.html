@@ -1,0 +1,104 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<title>Locker</title>
+	<link rel="stylesheet" type="text/css" href="bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="bootstrap-datepicker.min.css">
+	<link rel="stylesheet" type="text/css" href="quill.snow.css">
+	<link rel="stylesheet" type="text/css" href="locker.css">
+</head>
+<body>
+<div id="loader" style="height: 100%; max-height: 100%; background-color: var(--dark-blue-1);">
+</div>
+<div id="root" class="row" style="display: none;">
+	<div class="col" id="side-nav-bar">
+	<div class="row"><div class="header">Locker</div></div>
+	<div class="row"><div class="nav-item col" data-target="dashboard">Dashboard</div></div>
+	<div class="row"><div class="nav-item col active" data-target="password_manager">Passwords</div></div>
+	<div class="row"><div class="nav-item col" data-target="notes_manager">Notes</div></div>
+	<div class="row"><div class="nav-item col" data-target="journal_manager">Journal</div></div>
+	<div class="row"><div class="nav-item col" data-target="settings">Settings</div></div>
+	<div class="row"><div class="nav-item col" data-target="import">Import</div><input type="file" name="import" onChange="showPasswordDialogForImport()" hidden></div>
+	<div class="row"><div class="nav-item col" data-target="export">Export</div></div>
+	</div>
+	<div class="col" id="main">
+		<div class="row" id="top-bar">
+		</div>
+		<div class="row" id="view">
+		
+		</div>
+		<div class="row" id="bottom-bar">
+		Dashboard
+		</div>
+	</div>
+</div>
+<!-- Modal -->
+<div class="modal" id="modal" tabindex="-1" role="dialog">
+  
+  </div>
+<!--Modal ends -->
+
+<!-- Locker initial screen -->
+<div id="lock-screen">
+<div class="container">
+<h3>Locker</h3>
+<div class="text-center lock-tab"><span class="active" id="new-tab">New</span><span id="import-tab">Import</span><span id="help-tab">Help</span></div>
+
+
+<div id="lock-new" class="tab-content">
+<div id="lock-create-form" class="form">
+<div class="input-group form-group">
+		<div class="input-group-prepend">
+  		<span class="input-group-text">Username</span>
+  		</div>
+		<input type="text" name="db-username" class="form-control">
+</div>
+<div class="input-group form-group">
+		<div class="input-group-prepend">
+  		<span class="input-group-text">Database name</span>
+  		</div>
+		<input type="text" name="db-name" class="form-control">
+</div>
+<div class="input-group form-group">
+		<div class="input-group-prepend">
+  		<span class="input-group-text">Password</span>
+  		</div>
+		<input type="password" name="db-pass" class="form-control password">
+</div>
+<input type="checkbox" onclick="showpassword(this)"> <span style="color:white; margin-left:10px">Show password</span>
+
+</div>
+<button class="btn btn-success" onclick="createDatabase()">Create</button>
+</div>
+
+<div id="lock-import"></div>
+<div id="lock-help" class="tab-content" style="display: none;">
+<b>About Locker</b>
+<p>Locker is a HTML based webapp to store information after encryption. It supports storing of 3 types of structured information - passwords, notes, and journals.
+</p>
+<b>How to use</b>
+<p>Create a database by entering the desired database name, username, and password. The password is used to encrypt your information. Once the database is created you can add passwords, notes and journals.</p>
+<p>Once you have added information, export your information. This file will contain all your information in encrypted form.</p>
+<p>To again work on the same information or to add more information, first import the file, unlock it using the set password, and add or edit the information.</p>
+<b>Is my information safe</b>
+<p>This is one of the safest app. No information is stored on any server. When you add any information, it is temporarily stored in your browser. It is lost once you refresh the page of close the browser. To reuse the information you must export it and store it whereever you like.
+</p>
+</div>
+</div>
+</div>
+</body>
+	<script type="text/javascript" src="jquery.min.js"></script>
+	<script type="text/javascript" src="bootstrap.min.js"></script>
+	<script type="text/javascript" src="bootstrap-datepicker.min.js"></script>
+	<script type="text/javascript" src="fontawesome.js"></script>
+	<script type="text/javascript" src="sjcl.js"></script>
+	<script type="text/javascript" src="quill.min.js"></script>
+	<script type="text/javascript" src="locker.js"></script>
+	<script type="text/javascript">
+		jQuery(document).ready(function(){
+			jQuery("#loader").remove();
+		});
+	</script>
+</html>
