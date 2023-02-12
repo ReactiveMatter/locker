@@ -59,7 +59,7 @@
   height: 100%;
   outline: none;
   overflow-y: auto;
-  padding: 12px 15px;
+  padding: 0px;
   tab-size: 4;
   -moz-tab-size: 4;
   text-align: left;
@@ -633,9 +633,7 @@
 .ql-snow .ql-editor h6 {
   font-size: 0.67em;
 }
-.ql-snow .ql-editor a {
-  text-decoration: underline;
-}
+
 .ql-snow .ql-editor blockquote {
   border-left: 4px solid #ccc;
   margin-bottom: 5px;
@@ -1350,6 +1348,7 @@ body
 #note-editor, #journal-editor
 {
 	margin-bottom: 20px;
+	border: none;
 }
 
 
@@ -1392,10 +1391,19 @@ body
 	font-size: 0.8em;
 }
 
-#note .note-title, #journal .journal-title
+input[name="title"]
+{
+	border: none;
+	border-radius:0px;
+	padding: 0px;
+	height: 1.5em;
+	margin-top:15px;
+}
+
+#note .note-title, #journal .journal-title, input[name="title"]
 {
 	font-size: 2em;
-	margin-bottom: 10px;
+	margin-bottom: 20px;
 	border-bottom: 1px solid #555;
 }
 
@@ -1408,14 +1416,20 @@ body
 
 span.tag
 {
-	color: var(--gray-2);
-	border: 1px solid var(--gray-3);
-	padding: 0.2em 0.5em;
+	color: var(--gray-1);
+	border: 1px solid var(--gray-4);
+	background: #fafafa;
+	padding: 5px 10px;
 	font-size: 0.9em;
 	margin: 0.3em;
 	border-radius: 0.2em;
 	line-height: 1;
 	cursor: pointer;
+}
+
+span.tag-head
+{
+	padding: 5px 10px 0px 0px;
 }
 span.tag.active {
 	background-color: var(--gray-5);
@@ -1561,6 +1575,8 @@ a.linkSuggestion:hover
 	width: inherit;
 	max-height: 350px;
 	overflow: auto;
+	border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
 }
 #search .dropdown-menu a
 {
@@ -1905,6 +1921,10 @@ a.linkSuggestion:hover
 }
 }
 
+span.input-group-text
+{
+	min-width: 150px;
+}
 
 /*locker.css end*/
 
@@ -2705,7 +2725,7 @@ function bindEvents()
 	});
 
 	jQuery('body').on("click",".option.toggle-menu", function(){
-	jQuery("#side-nav-bar").toggle();
+	jQuery("#side-nav-bar").stop().toggle();
 	});
 
 	/*For password manager */
@@ -2765,14 +2785,14 @@ function bindEvents()
 
 	});
 
-	jQuery('body').on("click",notes_manager_scope+".option.home", function(){
-		initializeNotesManager();
+	jQuery('body').on("click",notes_manager_scope+".option.note-list", function(){
+		loadNoteList();
 	});
 
-	jQuery('body').on("click",notes_manager_scope+".option.fav", function(){
+	jQuery('body').on("click",notes_manager_scope+".option.home", function(){
 	 if(Database.conf.notesManager.favorite == false)
 	 {
-	 	createModal("Message","You have not set favorite yet.","To set a note as favorite, click on the star icon in the top bar while viewing the note.");
+	 	createModal("Message","You have not set a home page yet.","To set a note as home, click on the star icon in the top bar while viewing the note.");
 	 	showModal();
 	 }
 	 else
@@ -2781,10 +2801,10 @@ function bindEvents()
 	 }
 	});
 
-	jQuery('body').on("click",notes_manager_scope+".option.set-fav", function(){
-	contentHTML = "Are you sure you want to set this note as the favorite?";
+	jQuery('body').on("click",notes_manager_scope+".option.set-home", function(){
+	contentHTML = "Are you sure you want to set this note as the home page?";
 	buttonHTML = `<button type="button" class="btn btn-success" onClick="setFavorite()">Yes</button>`;
-	createModal("Set favorite",contentHTML, buttonHTML);
+	createModal("Set Home",contentHTML, buttonHTML);
 	showModal();
 	});
 
@@ -3331,11 +3351,11 @@ function createNotesManagerTopBar()
 	<div class="top-bar-block option toggle-menu" title="Toggle menu">
 	<i class="fas fa-bars"></i>
 	</div>
-	<div class="home top-bar-block option" title="Root home">
-	<i class="fas fa-home"></i>
+	<div class="note-list top-bar-block option" title="Notes list">
+	<i class="fas fa-list-alt"></i>
 	</div>
-	<div class="fav top-bar-block option" title="Favorite">
-	<i class="fas fa-bookmark"></i>
+	<div class="home top-bar-block option" title="Home">
+	<i class="fas fa-home"></i>
 	</div>
 	`;
 
@@ -3761,6 +3781,72 @@ function applyConfigCreatePasswordBlocks(passwords)
 function initializeNotesManager()
 {	
 	jQuery("#main").attr("data-page","notes_manager");
+	jQuery("#side-nav-bar .nav-item").removeClass("active");
+	jQuery("#side-nav-bar div[data-target=notes_manager]").addClass("active");
+
+	createNotesManagerTopBar();
+	let viewHTML=`
+	<div id="trace" class="row">
+	</div>
+	<div id="tags" class="row">
+	</div>
+	<div id="messages">
+	</div>
+	<div id="note" style="display:none;">
+	</div>
+	<div id="notes">
+	</div>
+	`;
+	
+	jQuery("#view").html(viewHTML);
+
+	 if(Database.conf.notesManager.favorite)
+	 {
+	 	viewNote(Database.conf.notesManager.favorite);
+	 	return;
+	 }
+
+	createNotesView();
+	state.action = "notes_manager_home";
+	state.data={};
+	jQuery(notes_manager_scope+"#bottom-bar").html("Notes manager");
+
+	var sortOptionHTML = `
+	<div class="sort top-bar-block option">
+	<i class="fas fa-sort"></i>
+	</div>
+	<div class="dropdown" id="sort-dropdown">
+	<div class="dropdown-menu">
+	  <a class="dropdown-item" onClick="setSortConfig(1)" value="1">Title (A-Z)</a>
+	  <a class="dropdown-item" onClick="setSortConfig(2)" value="2">Title (Z-A)</a>
+	  <a class="dropdown-item" onClick="setSortConfig(3)" value="3">Date created (New to Old)</a>
+	  <a class="dropdown-item" onClick="setSortConfig(4)" value="4">Date created (Old to new)</a>
+	  <a class="dropdown-item" onClick="setSortConfig(5)" value="5">Date modified (New to Old)</a>
+	  <a class="dropdown-item" onClick="setSortConfig(6)" value="6">Date modified (Old to new)</a>
+	</div>
+	</div>
+	`;
+	jQuery(notes_manager_scope+"#top-bar").append(sortOptionHTML);
+	jQuery(notes_manager_scope+"#top-bar #sort-dropdown .dropdown-item[value="+Database.conf.notesManager.sort+"]").addClass("active");
+
+	let uniqueTags=getUniqueTags();
+	if(uniqueTags.length>0)
+	{
+		jQuery(notes_manager_scope+"#tags").html("<span class='tag-head'>Tags: </span>"+getTagViewHTML(uniqueTags));
+	}
+	else
+	{
+		jQuery(notes_manager_scope+"#tags").hide();
+	}
+
+	tag_filter = [];
+	updateTrace();
+
+}
+
+function loadNoteList()
+{	
+	jQuery("#main").attr("data-page","notes_manager");
 	createNotesManagerTopBar();
 	let viewHTML=`
 	<div id="trace" class="row">
@@ -3803,7 +3889,7 @@ function initializeNotesManager()
 	let uniqueTags=getUniqueTags();
 	if(uniqueTags.length>0)
 	{
-		jQuery(notes_manager_scope+"#tags").html("Tags: "+getTagViewHTML(uniqueTags));
+		jQuery(notes_manager_scope+"#tags").html("<span class='tag-head'>Tags: </span>"+getTagViewHTML(uniqueTags));
 	}
 	else
 	{
@@ -3811,11 +3897,8 @@ function initializeNotesManager()
 	}
 
 	tag_filter = [];
-
-	addNotesHistory(0);
 	updateTrace();
 }
-
 
 function createNotesView()
 {
@@ -3861,21 +3944,13 @@ function openAddNewNoteForm()
 {
 	var htmlCode =`
 	<form id="note-editor-form" class="form add-note">
-		<div class="input-group form-group">
-		<div class="input-group-prepend">
-  		<span class="input-group-text">Title</span>
-  		</div>
-		<input type="text" name="title" class="form-control" value="Untitled">
+		
+		<div id="note-editor">
 		</div>
 		<div class="input-group form-group">
-		<div class="input-group-prepend">
-	  	<span class="input-group-text">Tags</span>
-	  	</div>
 	  	<input type="text" name="tags" class="form-control" placeholder="Add tags seperated with space">
 	  	<div class="color-selector" value="white" title="Color"></div>
 	  	</div>
-		<div id="note-editor">
-		</div>
 		<button type="button" class="btn btn-success option save">Save</button>
 		<button type="button" class="btn btn-info option cancel"">Cancel</button>
 		</form>
@@ -3911,6 +3986,8 @@ function openAddNewNoteForm()
 //Adding custom link handler to quill
  quillObject.getModule('toolbar').addHandler('link', addlink); 
 
+ jQuery("#note-editor").before('<input type="text" name="title" class="form-control" value="Untitled">');
+
 // jQuery(notes_manager_scope+"#note #note-editor .ql-editor").html("</br></br></br></br></br></br>");
  updateNoteTopBarforNoteEditing();
  state.action = "create_note";
@@ -3927,22 +4004,15 @@ function editNote(id)
 
 	var htmlCode =`
 	<form id="note-editor-form" class="form edit-note">
-		<div class="input-group form-group">
-		<div class="input-group-prepend">
-  		<span class="input-group-text">Title</span>
-  		</div>
-  	<input type="hidden" name="id" class="form-control" value="`+id+`">
-		<input type="text" name="title" class="form-control" value="`+note.title+`">
+		
+  		<input type="hidden" name="id" class="form-control" value="`+id+`">
+		
+		<div id="note-editor">
 		</div>
 		<div class="input-group form-group">
-		<div class="input-group-prepend">
-	  	<span class="input-group-text">Tags</span>
-	  	</div>
 	  	<input type="text" name="tags" class="form-control" placeholder="Add tags seperated with space">
 	  	<div class="color-selector" value="white" title="Color"></div>
 	  	</div>
-		<div id="note-editor">
-		</div>
 		<button type="button" class="btn btn-success option update">Save</button>
 		<button type="button" class="btn btn-info option cancel"">Cancel</button>
 		</form>
@@ -3991,6 +4061,9 @@ function editNote(id)
  quillObject.getModule('toolbar').addHandler('link', addlink);
 
  jQuery(notes_manager_scope+"#note #note-editor .ql-editor").html(note_html);
+
+ jQuery("#note-editor").before('<input type="text" name="title" class="form-control" value="'+note.title+'">');
+
  state.action = "edit_note";
  state.data.id=id;
 }
@@ -4048,6 +4121,7 @@ function closeNoteEditor()
 
 function viewNote(id)
 {	
+
 	let note = database_getNotesObject(id);
 	if(note)
 	{
@@ -4122,7 +4196,7 @@ function updateTrace()
 		for(let i=0; i<noteHistory.length; i++)
 		{	if(noteHistory[i]==0)
 			{
-				traceHtml+=`<li><a href="https://note/`+noteHistory[i]+`">Root</a></li>`;
+				traceHtml+=`<li><a href="https://note/`+noteHistory[i]+`">Note list</a></li>`;
 			}
 			else if(database_getNotesObject(noteHistory[i]))
 			{
@@ -4142,29 +4216,29 @@ function updateNoteTopBarforNoteViewing()
 	<div class="top-bar-block option toggle-menu" title="Toggle menu">
 		<i class="fas fa-bars"></i>
 	</div>
+	<div class="note-list top-bar-block option" title="Note list">
+	<i class="fas fa-list-alt"></i>
+	</div>
 	<div class="home top-bar-block option" title="Home">
 	<i class="fas fa-home"></i>
 	</div>
-	<div class="fav top-bar-block option" title="Favorite">
-	<i class="fas fa-bookmark"></i>
-	</div>`;
-	
-	if(state.data.id == Database.conf.notesManager.favorite)
-	{ 
-	}
-	else
-	{newHTML+=`<div class="set-fav top-bar-block option" title="Set this note as favorite">
-	<i class="far fa-star"></i>
-	</div>`;
-	}
-	newHTML+=`
 	<div class="back top-bar-block option" title="Back">
 	<i class="fas fa-chevron-left"></i>
 	</div>
 	<div class="top-bar-block" id="search">
 		<input type="text" name="search" placeholder="Search" autocomplete="off"></input>
 		<div class="dropdown-menu"></div>
-	</div>
+	</div>`;
+	
+	if(state.data.id == Database.conf.notesManager.favorite)
+	{ 
+	}
+	else
+	{newHTML+=`<div class="set-home top-bar-block option" title="Set this note as favorite/home">
+	<i class="far fa-star"></i>
+	</div>`;
+	}
+	newHTML+=`
 	<div class="edit top-bar-block option" title="Edit">
 	<i class="fas fa-edit"></i>
 	</div>
@@ -4181,17 +4255,17 @@ function updateNoteTopBarforNoteEditing()
 	<div class="top-bar-block option toggle-menu" title="Toggle menu">
 		<i class="fas fa-bars"></i>
 	</div>
+	<div class="note-list top-bar-block option" title="Note list">
+	<i class="fas fa-list-alt"></i>
+	</div>
 	<div class="home top-bar-block option" title="Home">
 	<i class="fas fa-home"></i>
-	</div>
-	<div class="fav top-bar-block option" title="Favorite">
-	<i class="fas fa-bookmark"></i>
 	</div>`;
 	if(state.data.id == Database.conf.notesManager.favorite)
 	{ 
 	}
 	else
-	{newHTML+=`<div class="set-fav top-bar-block option" title="Set this note as favorite">
+	{newHTML+=`<div class="set-home top-bar-block option" title="Set this note as favorite">
 	<i class="far fa-star"></i>
 	</div>`;
 	}
@@ -4481,19 +4555,14 @@ function openAddNewJournalForm()
 {
 	var htmlCode =`
 	<form id="journal-editor-form" class="form add-journal">
-		<div class="input-group form-group">
-		<div class="input-group-prepend">
-  		<span class="input-group-text">Title</span>
-  		</div>
-		<input type="text" name="title" class="form-control" value="Untitled">
+	
+		<div id="journal-editor">
 		</div>
 		<div class="input-group form-group">
 		<div class="input-group-prepend">
   		<span class="input-group-text">Date</span>
   		</div>
 		<input type="text" name="date" class="form-control datepicker">
-		</div>
-		<div id="journal-editor">
 		</div>
 		<button type="button" class="btn btn-success option save">Save</button>
 		<button type="button" class="btn btn-info option cancel"">Cancel</button>
@@ -4513,6 +4582,8 @@ function openAddNewJournalForm()
 
  //Adding custom link handler to quill
  quillObject.getModule('toolbar').addHandler('link', addlink); 
+
+jQuery("#journal-editor").before('<input type="text" name="title" class="form-control" value="Untitled">');
 
 jQuery(journal_manager_scope+".datepicker").datepicker({
     format: "dd/mm/yyyy",
@@ -4541,21 +4612,12 @@ function editJournal(id)
 
 	var htmlCode =`
 	<form id="journal-editor-form" class="form edit-journal">
-		<div class="input-group form-group">
-		<div class="input-group-prepend">
-  		<span class="input-group-text">Title</span>
-  		</div>
-  		<input type="hidden" name="id" class="form-control" value="`+id+`">
-		<input type="text" name="title" class="form-control" value="`+journal.title+`">
+	<div id="journal-editor">
 		</div>
 		<div class="input-group form-group">
-		<div class="input-group-prepend">
-  		<span class="input-group-text">Date</span>
-  		</div>
 		<input type="text" name="date" class="form-control datepicker" value="`+journal.date+`">
 		</div>
-		<div id="journal-editor">
-		</div>
+		<input type="hidden" name="id" class="form-control" value="`+id+`">
 		<button type="button" class="btn btn-success option update">Save</button>
 		<button type="button" class="btn btn-info option cancel"">Cancel</button>
 		</form>
@@ -4575,7 +4637,7 @@ function editJournal(id)
 
 //Adding custom link handler to quill
  quillObject.getModule('toolbar').addHandler('link', addlink); 
-
+jQuery("#journal-editor").before('<input type="text" name="title" class="form-control" value="'+journal.title+'">');
  jQuery(journal_manager_scope+".datepicker").datepicker({
     format: "dd/mm/yyyy",
     clearBtn: true,
@@ -5192,7 +5254,7 @@ function goToInternalLink(link)
 	
 	id= link;
 	id=id.replace("https://note/","");
-	if(id==0){initializeNotesManager();}
+	if(id == 0) {loadNoteList();}
 	else{viewNote(id)};
 	console.log("Internal link clicked");
 }
@@ -5220,6 +5282,8 @@ function quillFullscreen()
 		.ql-toolbar.ql-snow{position: sticky; border: none; border-bottom:1px solid #ccc;}
 		.ql-container.ql-snow{border:none;}
 		 #view{padding:0px;}
+		 .ql-editor{padding-left:20px;padding-right:20px;}
+		 input[name="title"]{margin-left:20px;margin-right:20px;}
 		</style>
 		`);
 	}
@@ -5270,7 +5334,7 @@ function setFavorite()
 {
 	Database.conf.notesManager.favorite = state.data.id;
 	hideModal();
-	document.querySelector(".option.set-fav").remove();
+	document.querySelector(".option.set-home").remove();
 }
 
 /* Local storage manager function */
