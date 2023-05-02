@@ -1,7 +1,7 @@
 # Locker
 This is an offline html app to save your passwords, personal notes and journals.
 
-[Run this app on github](https://reactivematter.github.io/locker/Locker.html)
+[Run this app on github](https://reactivematter.github.io/locker/locker.html)
 
 ## Modules
 * Password manager
@@ -19,6 +19,8 @@ This is an offline html app to save your passwords, personal notes and journals.
 I developed this app for personal use. Currently it serving my needs fully, hence I do not intend to develop it further. If you like the concept and want to develop it further, you are welcome to fork it.
 
 **Change log**
+* Version 6
+  * Made UI changes and refactored password display code to make it faster 
 * Version 5
   * Added colors for notes
 * Version 4

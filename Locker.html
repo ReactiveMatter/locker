@@ -1652,16 +1652,15 @@ a.linkSuggestion:hover
 	background: var(--sidebar-bg-color);
 }
 
-#local-storage-content
+.local-storage-content
 {
 	margin: auto;
-	max-width: 500px;
 }
-#local-storage-content a, button
+.local-storage-content a, button
 {
 	margin: 5px;
 }
-#local-storage-content a:hover
+.local-storage-content a:hover
 {
 	text-decoration: underline;
 	cursor: pointer
@@ -1907,7 +1906,7 @@ span.input-group-text
 <div id="loader" style="height: 100%; max-height: 100%; background-color: var(--dark-blue-1);">
 </div>
 <div id="root" class="row" style="display: none;">
-	<div class="col" id="side-nav-bar">
+		<div class="col" id="side-nav-bar">
 	<div class="row"><div class="header">Locker</div></div>
 	<div class="row"><div class="nav-item col" data-target="dashboard">Dashboard</div></div>
 	<div class="row"><div class="nav-item col active" data-target="password_manager">Passwords</div></div>
@@ -1967,6 +1966,9 @@ span.input-group-text
 <button class="btn btn-success" onclick="createDatabase()">Create</button>
 </div>
 <div id="lock-import"></div>
+<div id="lock-ls" class="tab-content" style="display: none;">
+<div class="local-storage-content"></div>
+</div>
 <div id="lock-help" class="tab-content" style="display: none;">
 <b>About Locker</b>
 <p>Locker is a HTML based webapp to store information after encryption. It supports storing of 3 types of structured information - passwords, notes, and journals.
@@ -1986,7 +1988,7 @@ span.input-group-text
 <div id="local-storage" style="display: none;">
 <div class="container">
 <h3 style="text-align: center;color:white">Locker local storage</h3>
-<div id="local-storage-content"></div>
+<div class="local-storage-content"></div>
 </div>
 </body>
 	<script type="text/javascript">
@@ -2098,7 +2100,7 @@ class database
 	{
 	this.name;
 	this.username;
-	this.version=5; //Added in version 1
+	this.version=6; //Added in version 1
 	this.modules={};
 	this.conf= new conf(); //Added in version 1
 	}
@@ -2506,6 +2508,7 @@ var dashboard_scope="div[data-page='dashboard'] ";
 var password_manager_scope="div[data-page='password_manager'] ";
 var notes_manager_scope="div[data-page='notes_manager'] ";
 var journal_manager_scope="div[data-page='journal_manager'] ";
+var local_storage_scope="div[data-page='local-storage'] ";
 var settings_scope="div[data-page='settings'] ";
 var appPass;
 var noteHistory = []; //0 means notes home.
@@ -2669,7 +2672,6 @@ function bindEvents()
 	jQuery("#side-nav-bar div[data-target=export").on("click",function(){exportDatabase(Database);});
 	jQuery("#side-nav-bar div[data-target=import").on("click",function(){jQuery("input[name=import]").click();});
 	jQuery("#side-nav-bar div[data-target=local-storage").on("click",openLocalStorageManager);
-	jQuery("#local-storage-tab").on("click",openLocalStorageManager);
 
 	//Lock screen
 	jQuery("#new-tab").on("click", function(){
@@ -2686,6 +2688,15 @@ function bindEvents()
 		// jQuery(".lock-tab span").removeClass("active");
 		// jQuery("#import-tab").addClass("active");
 		jQuery("input[name=import]").click();
+	});
+
+	jQuery("#local-storage-tab").on("click", function(){
+		jQuery("#lock-screen .tab-content").hide();
+		jQuery("#lock-screen #lock-ls.tab-content").show();
+		jQuery(".lock-tab span").removeClass("active");
+		jQuery("#local-storage-tab").addClass("active");
+
+		loadLocalStorageData();
 	});
 
 	jQuery("#help-tab").on("click", function(){
@@ -3169,7 +3180,6 @@ function addDatabase(data)
 				data.version = 3;
 				data.modules.notesManager.colors = Database.modules.notesManager.colors;
 
-
 			}
 
 			if(data.version == 3)
@@ -3177,6 +3187,12 @@ function addDatabase(data)
 				console.log("Imported file is of version 3 upgrading to version 4");
 				data.version = 4;
 				data.conf.notesManager.favorite = Database.conf.notesManager.favorite;
+			}
+
+			if(data.version == 4 || data.version == 5)
+			{
+				console.log("Imported file is of version 3 upgrading to version 6");
+				data.version = 6;
 			}
 
 			Database = data;
@@ -3628,14 +3644,12 @@ function createPasswordsView()
 	{	jQuery(password_manager_scope+"#passwords").html("");
 		
 		applyConfigCreatePasswordBlocks(passwords);
-		// for (var i = passwords.length - 1; i >= 0; i--) {
-		// 	addPasswordBlock(passwords[i].id, passwords[i].website, passwords[i].username);
-		// }
+
 		
 	}
 }
 
-function addPasswordBlock(id, website, username)
+function getPasswordBlock(id, website, username)
 {	
 		var htmlCode =`
 		<div class="row password-block" id="`+id+`">
@@ -3647,7 +3661,7 @@ function addPasswordBlock(id, website, username)
 		</div>
 		</div>`;
 
-	jQuery(password_manager_scope+"#passwords").append(htmlCode);
+		return htmlCode;
 }
 
 
@@ -3679,7 +3693,15 @@ function searchPasswords()
 	{
 	let passwords = Database.modules.passwordManager.passwords;
 	let matchingPasswords = passwords.filter(function(e){
-		return e.website.toLowerCase().includes(q.toLowerCase());
+		if(e.website.toLowerCase().includes(q.toLowerCase()) || e.username.toLowerCase().includes(q.toLowerCase()))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+		
 	});
 	createPasswordSearchResultsView(matchingPasswords);
 	}
@@ -3698,9 +3720,6 @@ function createPasswordSearchResultsView(passwords)
 		jQuery(password_manager_scope+"#passwords").html("");
 
 		applyConfigCreatePasswordBlocks(passwords);
-		// for (var i = passwords.length - 1; i >= 0; i--) {
-		// 	addPasswordBlock(passwords[i].id, passwords[i].website, passwords[i].username);
-		// }
 	}
 }
 
@@ -3743,9 +3762,13 @@ function applyConfigCreatePasswordBlocks(passwords)
 		});
 	}
 
+	let htmlCode='';
+
 	for (var i =0; i<p.length; i++) {
-			addPasswordBlock(p[i].id, p[i].website, p[i].username);
+			htmlCode += getPasswordBlock(p[i].id, p[i].website, p[i].username);
 		}
+
+	jQuery(password_manager_scope+"#passwords").append(htmlCode);
 }
 
 
@@ -3797,6 +3820,7 @@ function initializeNotesManager(t='fav')
 	state.action = "notes_manager_home";
 	state.data={};
 	jQuery(notes_manager_scope+"#bottom-bar").html("Notes manager");
+	history.pushState("notes");
 
 	var sortOptionHTML = `
 	<div class="sort top-bar-block option">
@@ -4226,6 +4250,9 @@ function updateNoteTopBarforNoteViewing()
 	</div>`;
 	}
 	newHTML+=`
+	<div class="add top-bar-block option">
+	<i class="fas fa-plus"></i>
+	</div>
 	<div class="edit top-bar-block option" title="Edit">
 	<i class="fas fa-edit"></i>
 	</div>
@@ -4310,6 +4337,7 @@ function searchNotes(notes)
 	let matchingNotes = notes.filter(function(e){
 	return e.title.toLowerCase().includes(q.toLowerCase());
 	});	
+
 	createNotesSearchResultsView(matchingNotes);
 	}
 }
@@ -5327,7 +5355,33 @@ function setFavorite()
 /* Local storage manager function */
 function openLocalStorageManager()
 {	
-	jQuery("#local-storage").css("display","block");
+	jQuery("#main").attr("data-page","local-storage");
+	createTopBar();
+	jQuery(local_storage_scope+"#bottom-bar").html("This data is stored in your browser");
+	var viewHTML = `
+	<div class="local-storage-content">
+	</div>`;
+	jQuery(local_storage_scope+"#top-bar").html(`
+		<div class="top-bar-block option toggle-menu" title="Toggle menu">
+		<i class="fas fa-bars"></i>
+		</div>
+		<div style='line-height:0.8em;padding:calc(20px - 0.5em) 20px;'>Local storage`);
+	jQuery(local_storage_scope+"#view").html(viewHTML);
+	jQuery("#side-nav-bar .nav-item").removeClass("active");
+	jQuery("#side-nav-bar div[data-target=local-storage]").addClass("active");
+
+
+	loadLocalStorageData();
+	// localStorageHTML+=`<div style="text-align:center">
+	// <button type="button" class="btn btn-info" onclick="confirmClearLocalStorage()">Clear</button>
+	// <button type="button" class="btn btn-danger" onclick="closeLocalStorageManager()">Close</button>
+	// </div>`;
+	// jQuery("#local-storage .local-storage-content").append(localStorageHTML);
+	
+}
+
+function loadLocalStorageData()
+{
 	let localStorageHTML=``;
 	let localDBcount = 0;
 	if(localStorage.length==0)
@@ -5353,11 +5407,7 @@ function openLocalStorageManager()
 
 		
 	}
-	localStorageHTML+=`<div style="text-align:center">
-	<button type="button" class="btn btn-info" onclick="confirmClearLocalStorage()">Clear</button>
-	<button type="button" class="btn btn-danger" onclick="closeLocalStorageManager()">Close</button>
-	</div>`;
-	jQuery("#local-storage-content").html(localStorageHTML);
+	jQuery(".local-storage-content").html(localStorageHTML);
 
 }
 
@@ -5433,7 +5483,7 @@ function deleteFromLocalStorage(key)
 {	localStorage.removeItem(key);
 	hideModal();
 	closeLocalStorageManager();
-	openLocalStorageManager();
+	loadLocalStorageData();
 }
 
 function clearLocalStorage()
@@ -5447,13 +5497,13 @@ function clearLocalStorage()
 	}
 	hideModal();
 	closeLocalStorageManager();
-	openLocalStorageManager();
+	loadLocalStorageData();
 	floatingMessage("Local storage cleared");
 }
 
 function closeLocalStorageManager()
 {	jQuery("#local-storage").css("display","none");
-	jQuery("#local-storage-content").html("");
+	jQuery(".local-storage-content").html("");
 }
 
 function floatingMessage(contentHTML)
