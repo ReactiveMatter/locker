@@ -1320,12 +1320,13 @@ body
 .password-block .option:hover, .notes-block .option:hover, .journal-block .option:hover
 {
 	cursor: pointer;
-	opacity: 0.9;
+	opacity: 0.7;
+	color:#0049ff;
 }
 
 .password-block .edit.option:hover, .notes-block .edit.option:hover, .journal-block .edit.option:hover
 {
-	color: var(--green);
+	color: var(--green-1);
 	cursor: pointer;
 }
 .password-block .delete.option:hover, .notes-block .delete.option:hover, .journal-block .delete.option:hover
@@ -1378,18 +1379,34 @@ body
 .notes-block .title, .journal-block .title
 {
 	font-size: 1.2em;
+/*	display: inline-flex;*/
+	flex-grow: 1;
 }
 
 .notes-block .title:hover, .journal-block .title:hover
 {
 	cursor: pointer;
-	text-decoration: underline;
+/*	text-decoration: underline;*/
 }
 
 .notes-block .note-details, .journal-block .journal-details
 {
 	font-size: 0.8em;
+/*	display: inline-flex;*/
 }
+
+.notes-block>.col, .journal-block>.col
+{
+	display: flex;
+	flex-direction: row ;
+}
+
+
+.notes-block:hover, .journal-block:hover
+{
+	box-shadow: 0px 0px 1px 0px;
+}
+
 
 input[name="title"]
 {
@@ -1407,6 +1424,14 @@ input[name="title"]
 	border-bottom: 1px solid #555;
 }
 
+
+.journal-date
+{
+	font-size: 0.9em;
+	color:darkgray;
+/*	display: inline-flex;*/
+}
+
 /* Tags */
 #note_tags
 {
@@ -1418,7 +1443,7 @@ span.tag
 {
 	color: var(--gray-1);
 	border: 1px solid var(--gray-4);
-	background: #fafafa;
+/*	background: #fafafa;*/
 	padding: 5px 10px;
 	font-size: 0.9em;
 	margin: 0.3em;
@@ -1430,7 +1455,7 @@ span.tag
 .note-details span.tag
 {
 	color: var(--gray-1);
-	background: #fafafa;
+/*	background: #fafafa;*/*/
 	font-size: 0.9em;
 	margin: 0.3em;
 	line-height: 1;
@@ -1518,50 +1543,49 @@ a.linkSuggestion:hover
 /* Formatting for note text */
 
 
-.ql-editor p, .ql-snow .ql-editor pre.ql-syntax, .ql-snow .ql-editor blockquote
+#view .ql-editor p, #view .ql-editor pre.ql-syntax, #view #view .ql-editor blockquote
 {
 	margin-bottom: 10px;
 }
-.ql-editor p:last-child, .ql-editor ol:last-child, .ql-editor ul:last-child, .ql-editor pre:last-child, .ql-editor blockquote:last-child
+#view .ql-editor p:last-child, #view .ql-editor ol:last-child, #view .ql-editor ul:last-child, #view .ql-editor pre:last-child, #view .ql-editor blockquote:last-child
 {
 	margin-bottom: 0px;
 }
 
-.ql-editor ol, .ql-editor ul
+#view .ql-editor ol, #view .ql-editor ul
 {
 	padding-left: 35px;
 	margin-bottom: 10px;
 }
 
-.ql-editor ol > li, .ql-editor ul > li
+#view .ql-editor ol > li, #view .ql-editor ul > li
 {
 	list-style: unset;
 }
-.ql-editor ol > li::before, .ql-editor ul > li::before
+#view .ql-editor ol > li::before, #view .ql-editor ul > li::before
 {
 	display: none;
 }
-.ql-editor ol li:not(.ql-direction-rtl), .ql-editor ul li:not(.ql-direction-rtl)
+#view .ql-editor ol li:not(.ql-direction-rtl), #view .ql-editor ul li:not(.ql-direction-rtl)
 {
 	padding-left: unset;
 }
 
-.ql-snow .ql-editor h1, .ql-snow .ql-editor h2, .ql-snow .ql-editor h3
+#view .ql-editor h1, #view .ql-editor h2, #view .ql-editor h3
 {
-	font-weight: lighter;
 	margin-top: 15px;
 	margin-bottom: 15px;
 }
 
-.ql-snow .ql-editor h1
+#view .ql-editor h1
 {
 	font-size: 1.75em;
 }
-.ql-snow .ql-editor h2
+#view .ql-editor h2
 {
 	font-size: 1.5em;
 }
-.ql-snow .ql-editor h3
+#view .ql-editor h3
 {
 	font-size: 1.15em;
 }
@@ -1665,6 +1689,10 @@ a.linkSuggestion:hover
 	text-decoration: underline;
 	cursor: pointer
 }
+
+
+
+
 .alert-dismissible .close
 {padding: 5px;}
 
@@ -1892,11 +1920,18 @@ span.input-group-text
 	min-width: 150px;
 }
 
-.journal-date
-{
-	font-size: 0.9em;
-	color:darkgray;
+#lock-help::-webkit-scrollbar {
+  width: 10px;
 }
+ 
+#lock-help::-webkit-scrollbar-track {
+  display: none;
+}
+ 
+#lock-help::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
 
 /*locker.css end*/
 
@@ -1917,6 +1952,7 @@ span.input-group-text
 	<div class="row"><div class="nav-item col" data-target="local-storage">Local storage</div></div>
 	<div class="row"><div class="nav-item col" data-target="import">Import</div><input type="file" name="import" onChange="showPasswordDialogForImport()" hidden></div>
 	<div class="row"><div class="nav-item col" data-target="export">Export</div></div>
+	<div class="row"><div class="nav-item col" data-target="help">Help</div></div>
 	</div>
 	<div class="col" id="main">
 		<div class="row" id="top-bar">
@@ -1970,16 +2006,48 @@ span.input-group-text
 <div class="local-storage-content"></div>
 </div>
 <div id="lock-help" class="tab-content" style="display: none;">
-<b>About Locker</b>
+<h4>About Locker</h4>
 <p>Locker is a HTML based webapp to store information after encryption. It supports storing of 3 types of structured information - passwords, notes, and journals.
 </p>
-<b>How to use</b>
-<p>Create a database by entering the desired database name, username, and password. The password is used to encrypt your information. Once the database is created you can add passwords, notes and journals.</p>
-<p>Once you have added information, export your information. This file will contain all your information in encrypted form.</p>
-<p>To again work on the same information or to add more information, first import the file, unlock it using the set password, and add or edit the information.</p>
-<b>Is my information safe</b>
+<h4>How to use</h4>
+<p>When you open Locker in your browser, you will see three tabs (excluding help).</p>
+	<ul>
+		<li>New: Using this tab you can create a new database inside your locker. This database is created and stays in the temporary memory of the browser.</li>
+		<li>Local storage: Locker allows you to save your database in the local storage of the browser. If you have saved a database in local storage, they will appear under this tab. You can load or delete your saved database from this tab.</li>
+		<li>Import: If you have a locker database in file, then you can load the database using this option.</li>
+	</ul>
+<p>To start using locker, create a database by entering the desired database name, username, and password in the 'New' tab of the locker screen. The password you enter is used to encrypt your information. Once the database is created you can add passwords, notes and journals.</p>
+<p>After creation of your locker database, you will see the various options in the sidebar. You can toggle sidebar from the top-bar.</p>
+<h4>Dashboard</h4>
+<p>This contain summary of your data inside current database.</p>
+<h4>Passwords</h4>
+<p>You can store passwords by clicking on the 'plus' sign in the top bar. You can also sort your passwords based on date or alphabetical order.</p>
+<p>To view password, click in the 'eye' icon of the password block. You can edit and delete the password from the options in the password block.</p>
+<p>You can search password from the top bar. Any text entered in the search box will be matched against website and username in yours passwords.</p>
+<h4>Notes</h4>
+<p>You can add, sort and search notes from the top bar. Each note can be tagged using space separated list of tags in add or edit form.</p>
+<p>Locker uses Quill editor to creates notes and the entire HTML content of your notes is saved in database after encryption. Quill editor has been extended to allow users to create boxes for emphasis by clicking on 'Box' button. Once a box is created, 'BoxS' button can be used to change 'box' color. The box settings in basicaly the classes which are applied to the box. The class <code>box</code> is automatically applied. To apply color to the box type the color of the box in the setting input. For example, the input <code>box red</code> will make the box red. The supported colors are - gray (default). red, blue, green, yellow, pink and purple. To remove the box, click again on 'Box' button.</p>
+</p>You can add colors to your notes too.</p>
+<p>Any note marked as favorite by checking the 'star' icon will become the home page of you notes. Click again the same icon to remove the note from home page.</p>
+<h4>Journals</h4>
+<p>Journals is similar to notes, except for the following:</p>
+<ul>
+<li>Tags cannot be used in journal.</li>
+<li>Date can be added manually to a journal.</li>
+</ul>
+<h4>Saving database</h4>
+<p>Once you have added data, you can save you database. There are two options for storage. </p>
+<ul>
+	<li>Export: You can export you database in a file by using the 'Export' option in the sidebar. You can save this file anywhere you like. You can then import this file using 'Import' option in the locker tab or the sidebar.</li>
+	<li>Local storage: You can save your database in the local storage of your browser by using the 'Save; option in the sidebar. Once save, the database will be available in 'Local storage' option in locker tab and sidebar. However, note that  if you clear site browsing data, it might clear local storage. Hence it is recommended to use the export option to keep your data safe.</li>
+</ul>
+<h4>Is my information safe</h4>
 <p>This is one of the safest app. No information is stored on any server. When you add any information, it is temporarily stored in your browser. It is lost once you refresh the page of close the browser. To reuse the information you must export it and store it whereever you like.
 </p>
+<h4>Inspiration</h4>
+<p>The Locker is inspired by <a href="https://tiddlywiki.com/">TiddlyWiki</a> which is a wiki in a HTML file.</p>
+<p style="text-align:center;">Created by ReactiveMatter.</p>
+<p style="text-align:center;">Source code is available on <a href='https://github.com/ReactiveMatter/locker'>Github</a>.</p>
 </div>
 <div id="version" style="text-align:right; color:white;"></div>
 </div>
@@ -2510,6 +2578,7 @@ var notes_manager_scope="div[data-page='notes_manager'] ";
 var journal_manager_scope="div[data-page='journal_manager'] ";
 var local_storage_scope="div[data-page='local-storage'] ";
 var settings_scope="div[data-page='settings'] ";
+var help_scope="div[data-page='help'] ";
 var appPass;
 var noteHistory = []; //0 means notes home.
 var tag_filter = [];
@@ -2668,10 +2737,11 @@ function initializeDatabase()
 
 function bindEvents()
 {
-	//Export option will export database in json file when clicked
+	//Clicks on sidebar
 	jQuery("#side-nav-bar div[data-target=export").on("click",function(){exportDatabase(Database);});
 	jQuery("#side-nav-bar div[data-target=import").on("click",function(){jQuery("input[name=import]").click();});
 	jQuery("#side-nav-bar div[data-target=local-storage").on("click",openLocalStorageManager);
+	jQuery("#side-nav-bar div[data-target=help").on("click",openHelp);
 
 	//Lock screen
 	jQuery("#new-tab").on("click", function(){
@@ -2794,10 +2864,31 @@ function bindEvents()
 	});
 
 	jQuery('body').on("click",notes_manager_scope+".option.set-home", function(){
+
+	let id = jQuery("#note").attr("data-note-id");
+
+	if(id)
+	{
 	contentHTML = "Are you sure you want to set this note as the home page?";
-	buttonHTML = `<button type="button" class="btn btn-success" onClick="setFavorite()">Yes</button>`;
+	buttonHTML = `<button type="button" class="btn btn-success" onClick="setFavorite(`+id+`)">Yes</button>`;
 	createModal("Set Home",contentHTML, buttonHTML);
 	showModal();
+	}
+
+	});
+
+	jQuery('body').on("click",notes_manager_scope+".option.remove-home", function(){
+
+	let id = jQuery("#note").attr("data-note-id");
+
+	if(id)
+	{
+	contentHTML = "Are you sure you want to remove this note as the home page?";
+	buttonHTML = `<button type="button" class="btn btn-success" onClick="removeFavorite(`+id+`)">Yes</button>`;
+	createModal("Set Home",contentHTML, buttonHTML);
+	showModal();
+	}
+
 	});
 
 	jQuery('body').on("click",notes_manager_scope+".option.back", function(){
@@ -2909,7 +3000,7 @@ function bindEvents()
 	/*For clicking tag on noteview*/
 	jQuery('body').on("click", notes_manager_scope+"#note_tags .tag", function(){
 	let t=jQuery(this).attr("data");
-	initializeNotesManager("search");
+	loadNoteList();
 	jQuery(notes_manager_scope+"#tags .tag[data="+t+"]").click();	
 	});
 
@@ -3243,7 +3334,6 @@ function loadState(newstate)
 		console.log("Initialising notes manager");
 		initializeNotesManager();
 	}
-
 	else if(newstate.page=="journal_manager")
 	{
 		jQuery("#view").html("");
@@ -3404,7 +3494,7 @@ function setSortConfig(sortValue)
 	else if(module=="notes_manager")
 	{
 		Database.conf.notesManager.sort = sortValue;
-		initializeNotesManager();
+		loadNoteList();
 	}
 	else if(module=="journal_manager")
 	{
@@ -3782,7 +3872,7 @@ function applyConfigCreatePasswordBlocks(passwords)
 
 
 /* Notes Manager */
-function initializeNotesManager(t='fav')
+function initializeNotesManager()
 {	
 	jQuery("#main").attr("data-page","notes_manager");
 	jQuery("#side-nav-bar .nav-item").removeClass("active");
@@ -3803,24 +3893,18 @@ function initializeNotesManager(t='fav')
 	`;
 	
 	jQuery("#view").html(viewHTML);
-
-	if(t=='fav')
-	{
-		if(Database.conf.notesManager.favorite)
+	
+	if(Database.conf.notesManager.favorite)
 	 {
 	 	viewNote(Database.conf.notesManager.favorite);
 	 	return;
 	 }
-
-	}
-
 
 
 	createNotesView();
 	state.action = "notes_manager_home";
 	state.data={};
 	jQuery(notes_manager_scope+"#bottom-bar").html("Notes manager");
-	history.pushState("notes");
 
 	var sortOptionHTML = `
 	<div class="sort top-bar-block option">
@@ -3875,7 +3959,7 @@ function loadNoteList()
 	jQuery("#side-nav-bar .nav-item").removeClass("active");
 	jQuery("#side-nav-bar div[data-target=notes_manager]").addClass("active");
 	createNotesView();
-	state.action = "notes_manager_home";
+	state.action = "notes_manager_list";
 	state.data={};
 	jQuery(notes_manager_scope+"#bottom-bar").html("Notes manager");
 
@@ -3967,9 +4051,9 @@ function openAddNewNoteForm()
 		</form>
 	`;
 
-  jQuery(notes_manager_scope+"#note").html(htmlCode).show();
-  jQuery(notes_manager_scope+"#tags").hide();
-  jQuery(notes_manager_scope+"#notes").hide();
+	  jQuery(notes_manager_scope+"#note").html(htmlCode).show();
+	  jQuery(notes_manager_scope+"#tags").hide();
+	  jQuery(notes_manager_scope+"#notes").hide();
 
 
     colorSelector("white");
@@ -4077,13 +4161,15 @@ function editNote(id)
 
  state.action = "edit_note";
  state.data.id=id;
-}
-
-	//remove note-bg and apply color to editor
-  	jQuery(".note-bg").remove();
-  	colorSelector(getColor(id));
+ //remove note-bg and apply color to editor
+jQuery(".note-bg").remove();
+colorSelector(getColor(id));
 	
 updateNoteTopBarforNoteEditing();
+
+}
+
+
 }
 
 
@@ -4181,6 +4267,8 @@ function viewNote(id)
 	updateNoteTopBarforNoteViewing();
 	updateTrace();
 	applyWrapper();
+
+	state.data.nmState = "view";
 }
 
 function addNotesHistory(id)
@@ -4241,14 +4329,15 @@ function updateNoteTopBarforNoteViewing()
 		<div class="dropdown-menu"></div>
 	</div>`;
 	
-	if(state.data.id == Database.conf.notesManager.favorite)
-	{ 
-	}
-	else
-	{newHTML+=`<div class="set-home top-bar-block option" title="Set this note as favorite/home">
+	newHTML+=`<div class="remove-home top-bar-block option" title="Remove this from favorite/home">
+	<i class="fa fa-star"></i>
+	</div>`;
+
+	newHTML+=`<div class="set-home top-bar-block option" title="Set this note as favorite/home">
 	<i class="far fa-star"></i>
 	</div>`;
-	}
+
+
 	newHTML+=`
 	<div class="add top-bar-block option">
 	<i class="fas fa-plus"></i>
@@ -4261,6 +4350,18 @@ function updateNoteTopBarforNoteViewing()
 	</div>
 	`;
 	jQuery(notes_manager_scope+"#top-bar").html(newHTML);
+
+	if(state.data.id == Database.conf.notesManager.favorite)
+	{ 
+	 	jQuery(notes_manager_scope+'.option.set-home').hide();
+	 	jQuery(notes_manager_scope+'.option.remove-home').show();
+
+	}
+	else
+	{
+		jQuery(notes_manager_scope+'.option.set-home').show();
+	 	jQuery(notes_manager_scope+'.option.remove-home').hide();
+	}
 }
 
 function updateNoteTopBarforNoteEditing()
@@ -4275,21 +4376,24 @@ function updateNoteTopBarforNoteEditing()
 	<div class="home top-bar-block option" title="Home">
 	<i class="fas fa-home"></i>
 	</div>`;
-	if(state.data.id == Database.conf.notesManager.favorite)
-	{ 
-	}
-	else
-	{newHTML+=`<div class="set-home top-bar-block option" title="Set this note as favorite">
-	<i class="far fa-star"></i>
-	</div>`;
-	}
+
 	newHTML+=`<div class="back top-bar-block option" title="Back">
 	<i class="fas fa-chevron-left"></i>
 	</div>
 	<div class="top-bar-block" id="search">
 	<input type="text" name="search" placeholder="Search" autocomplete="off"></input>
 	<div class="dropdown-menu"></div>
-	</div>
+	</div>`;
+
+	newHTML+=`<div class="remove-home top-bar-block option" title="Remove this from favorite/home">
+	<i class="fa fa-star"></i>
+	</div>`;
+
+	newHTML+=`<div class="set-home top-bar-block option" title="Set this note as favorite/home">
+	<i class="far fa-star"></i>
+	</div>`;
+
+	newHTML+=`
 	<div class="save top-bar-block option" title="Save">
 	<i class="fas fa-save"></i>
 	</div>
@@ -4301,6 +4405,18 @@ function updateNoteTopBarforNoteEditing()
 	</div>
 	`;
 	jQuery(notes_manager_scope+"#top-bar").html(newHTML);
+
+	if(state.data.id == Database.conf.notesManager.favorite)
+	{ 
+	 	jQuery(notes_manager_scope+'.option.set-home').hide();
+	 	jQuery(notes_manager_scope+'.option.remove-home').show();
+
+	}
+	else
+	{
+		jQuery(notes_manager_scope+'.option.set-home').show();
+	 	jQuery(notes_manager_scope+'.option.remove-home').hide();
+	}
 }
 
 function deleteNoteConfirmDialog(id)
@@ -5298,7 +5414,7 @@ function quillFullscreen()
 		.ql-container.ql-snow{border:none;}
 		 #view{padding:0px;}
 		 .ql-editor{padding-left:20px;padding-right:20px;}
-		 input[name="title"]{margin-left:20px;margin-right:20px;}
+		 input[name="title"]{margin-left:20px;margin-right:20px; width:calc(100% - 40px);}
 		</style>
 		`);
 	}
@@ -5345,11 +5461,27 @@ function applySettingsToBox()
 
 }
 
-function setFavorite()
+function setFavorite(id)
 {
-	Database.conf.notesManager.favorite = state.data.id;
+	Database.conf.notesManager.favorite = id;
 	hideModal();
-	document.querySelector(".option.set-home").remove();
+ 	jQuery(notes_manager_scope+'.option.set-home').hide();
+ 	jQuery(notes_manager_scope+'.option.remove-home').show();
+
+}
+
+function removeFavorite(id)
+{	
+	
+	if(Database.conf.notesManager.favorite == id)
+	{
+		Database.conf.notesManager.favorite = false;
+	}
+	
+	hideModal();
+	jQuery(notes_manager_scope+'.option.set-home').show();
+ 	jQuery(notes_manager_scope+'.option.remove-home').hide();
+
 }
 
 /* Local storage manager function */
@@ -5526,6 +5658,30 @@ function applyWrapper()
 	});
 }
 
+
+/* Open Help in Locker*/
+function openHelp()
+{	
+	jQuery("#main").attr("data-page","help");
+	createTopBar();
+	jQuery(help_scope+"#bottom-bar").html("Welcome to your encrypted locker");
+	var viewHTML = `
+	<div id="help-content">
+	</div>`;
+	jQuery(help_scope+"#top-bar").html(`
+		<div class="top-bar-block option toggle-menu" title="Toggle menu">
+		<i class="fas fa-bars"></i>
+		</div>
+		<div style='line-height:0.8em;padding:calc(20px - 0.5em) 20px;'>Help`);
+	jQuery(help_scope+"#view").html(viewHTML);
+	jQuery("#side-nav-bar .nav-item").removeClass("active");
+	jQuery("#side-nav-bar div[data-target=help]").addClass("active");
+
+	let content = jQuery("#lock-help").html();
+	jQuery(help_scope+"#help-content").html(content);
+
+	
+}
 
 
 
