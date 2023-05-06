@@ -33,5 +33,5 @@ I developed this app for personal use. Currently it serving my needs fully, henc
   * Notes can be linked together
 
 
-**Things that are be missing**
+**Things that are not available**
 * Full content search for notes (currently only titles are searched)
