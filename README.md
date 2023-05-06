@@ -22,7 +22,7 @@ I developed this app for personal use. Currently it serving my needs fully, henc
 * Version 6
   * Made UI changes and refactored password display code to make it faster 
 * Version 5
-  * Added colors for notes
+  * Added more colors for notes and refactored colors code
 * Version 4
   * Added visited notes trace bar
   * Added favorite page feature
