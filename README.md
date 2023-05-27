@@ -20,7 +20,8 @@ I developed this app for personal use. Currently it serving my needs fully, henc
 
 **Change log**
 * Version 6
-  * Made UI changes and refactored password display code to make it faster 
+  * Made UI changes and refactored password display code to make it faster
+  * Journal can be searched with human readable date and UI is improved
 * Version 5
   * Added more colors for notes and refactored colors code
 * Version 4

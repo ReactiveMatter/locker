@@ -1429,7 +1429,13 @@ input[name="title"]
 {
 	font-size: 0.9em;
 	color:darkgray;
-/*	display: inline-flex;*/
+}
+.journal-block 	.journal-date
+{
+	width: 165px;
+	line-height: 2;
+	border-right: 1px solid #eee;
+    margin-right: 15px;
 }
 
 /* Tags */
@@ -2696,9 +2702,9 @@ function humanReadableDate(timestamp)
 	}
 	let minutes = d.getMinutes();
 
-	return d.toLocaleString("en-IN",{ 
+  return d.toLocaleString("en-IN",{ 
   year: "numeric",
-  month: "2-digit",
+  month: "long",
   day: "2-digit",
   hour: "2-digit",
   minute: "2-digit",
@@ -2708,8 +2714,21 @@ function humanReadableDate(timestamp)
 }
 
 function displayJournalDate(date)
-{
-	return date;
+{	
+  var parts = date.split('/');
+  var day = parts[0];
+  var month = parts[1];
+  var year = parts[2];
+
+  // Create a new Date object with the parts in yyyy-mm-dd format
+  var convertedDate = new Date(year, month - 1, day);
+
+  return convertedDate.toLocaleString("en-IN",{ 
+  day: "2-digit",
+  month: "long",
+  year: "numeric"
+});
+
 }
 
 
@@ -4676,7 +4695,8 @@ function addJournalBlock(journal)
 	var htmlCode =`
 		<div class="row journal-block" id="`+journal.id+`">
 		<div class="col">
-		<div class="title">`+journal.title+`</div><div class="journal-date">`+journal.date+`</div>
+		<div class="journal-date"><i style="margin-right:10px; opacity:0.8;" class="fa fa-calendar-alt"></i>`+displayJournalDate(journal.date)+`</div>
+		<div class="title">`+journal.title+`</div>
 		</div>
 		</div>`;
 	jQuery(journal_manager_scope+"#journals").append(htmlCode);
@@ -4919,8 +4939,10 @@ function searchJournals()
 	{
 	let journals = Database.modules.journalManager.journals;
 	let matchingJournal = journals.filter(function(e){
-		return (e.title.toLowerCase().includes(q.toLowerCase()) || e.date.toLowerCase().includes(q.toLowerCase())) ;
+		return (e.title.toLowerCase().includes(q.toLowerCase()) || e.date.toLowerCase().includes(q.toLowerCase()) || displayJournalDate(e.date).toLowerCase().includes(q.toLowerCase())) ;
 	});
+
+
 	createJournalSearchResultsView(matchingJournal);
 	}
 }
