@@ -1291,6 +1291,15 @@ body
 	border: 1px solid;
 	border-color: var(--gray-6);
 	border-radius: 3px;
+	display: block;
+}
+
+.journal-block .journal-content
+{
+	margin-top:	10px;
+	padding-top: 10px !important;
+	padding-bottom: 10px !important;
+	border-top:1px solid #eee;
 }
 
 .label
@@ -2174,7 +2183,7 @@ class database
 	{
 	this.name;
 	this.username;
-	this.version=6; //Added in version 1
+	this.version=7; //Added in version 1
 	this.modules={};
 	this.conf= new conf(); //Added in version 1
 	}
@@ -2275,7 +2284,7 @@ class conf
 	  	multitagFilterBehaviour: 1, //Added in version 2; 0 is for OR and 1 is for AND
 	  	favorite: false //Added in version 4
 		},
-		this.journalManager={sort: 3}
+		this.journalManager={sort: 3, viewContent:false} //viewContent added in version 7
 		/* Sorting codes
 		By name (A-Z): 1
 		By name (Z-A): 2
@@ -3027,6 +3036,20 @@ function bindEvents()
 
 	jQuery('body').on("click",journal_manager_scope+".option.add", openAddNewJournalForm);
 
+	jQuery('body').on("click",journal_manager_scope+".option.viewJournalContent", function(){
+			
+			if(Database.conf.journalManager.viewContent)
+			{
+				Database.conf.journalManager.viewContent = false;
+			}
+			else
+			{
+				Database.conf.journalManager.viewContent = true;
+			}
+			
+			initializeJournalManager();
+	});
+
 	jQuery('body').on("click",journal_manager_scope+".form.add-journal .option.cancel", closeJournalEditor);
 
 	jQuery('body').on("click",journal_manager_scope+".form.edit-journal .option.cancel", function(){
@@ -3189,6 +3212,7 @@ function showPasswordDialogForImport()
 
 }
 
+//Imports database file using file api
 function importDatabase()
 {
    let file = jQuery("input[name=import]")[0].files[0];
@@ -3241,7 +3265,7 @@ function importDatabase()
 }
 }
 
-
+//Creates a new empty database
 function createDatabase()
 {
 
@@ -3268,15 +3292,13 @@ function addDatabase(data)
 			
 			if(typeof data.version == 'undefined')
 			{	
-				 //This means the Database version is not defined
-				console.log("Imported file is of version 0 upgrading to version 1");
+				//This means the Database version is not defined
 				data.version = 1;
 				data.conf = Database.conf;
 			}
 
 			if(data.version == 1)
 			{	// Upgrade old data to version 2 format with default values.
-				console.log("Imported file is of version 1 upgrading to version 2");
 				data.version = 2;
 				data.conf.notesManager.tagsPosition = Database.conf.notesManager.tagsPosition;
 				data.conf.notesManager.multitagFilter = Database.conf.notesManager.multitagFilter;
@@ -3286,7 +3308,6 @@ function addDatabase(data)
 
 			if(data.version == 2)
 			{ // Upgrade old data to version 3 format with default values.
-				console.log("Imported file is of version 2 upgrading to version 3");
 				data.version = 3;
 				data.modules.notesManager.colors = Database.modules.notesManager.colors;
 
@@ -3294,15 +3315,18 @@ function addDatabase(data)
 
 			if(data.version == 3)
 			{ // Upgrade old data to version 4 format with default values.
-				console.log("Imported file is of version 3 upgrading to version 4");
 				data.version = 4;
 				data.conf.notesManager.favorite = Database.conf.notesManager.favorite;
 			}
 
 			if(data.version == 4 || data.version == 5)
 			{
-				console.log("Imported file is of version 3 upgrading to version 6");
 				data.version = 6;
+			}
+			if(data.version == 6)
+			{ 	
+				data.version = 7;
+				data.conf.journalManager.viewContent = Database.conf.journalManager.viewContent;
 			}
 
 			Database = data;
@@ -4664,10 +4688,30 @@ function initializeJournalManager()
 	  <a class="dropdown-item" onClick="setSortConfig(3)" value="3">Date (New to Old)</a>
 	  <a class="dropdown-item" onClick="setSortConfig(4)" value="4">Date (Old to new)</a>
 	</div>
-	</div>
-	`;
+	</div>`;
+
+	let viewOptionHTML = ``;
+
+	if(Database.conf.journalManager.viewContent)
+	{
+		viewOptionHTML = `
+		<div class="viewJournalContent top-bar-block option" title="Hide journal content">
+		<i class="fas fa-arrows-alt-v"></i>
+		</div>`;
+	}
+	else
+	{
+		viewOptionHTML = `
+		<div class="viewJournalContent top-bar-block option" title="Show journal content">
+		<i class="fas fa-arrows-alt-v"></i>
+		</div>`;
+	}
+
 	jQuery(journal_manager_scope+"#top-bar").append(sortOptionHTML);
 	jQuery(journal_manager_scope+"#top-bar #sort-dropdown .dropdown-item[value="+Database.conf.journalManager.sort+"]").addClass("active");
+	jQuery(journal_manager_scope+"#top-bar").append(viewOptionHTML);
+
+
 }
 
 
@@ -4684,22 +4728,28 @@ function createJournalView()
 	{	
 		jQuery(journal_manager_scope+"#journals").html("");
 		applyConfigCreateJournalBlocks(journals);
-		// for (var i = journals.length - 1; i >= 0; i--) {
-		// 	addJournalBlock(journals[i]);
-		// }
 	}
 }
 
-function addJournalBlock(journal)
+function getJournalBlock(journal)
 {	
 	var htmlCode =`
 		<div class="row journal-block" id="`+journal.id+`">
 		<div class="col">
 		<div class="journal-date"><i style="margin-right:10px; opacity:0.8;" class="fa fa-calendar-alt"></i>`+displayJournalDate(journal.date)+`</div>
-		<div class="title">`+journal.title+`</div>
-		</div>
+		<div class="title">`+journal.title+`</div></div>`;
+	
+	console.log(Database.conf.journalManager.viewContent);
+
+	if(Database.conf.journalManager.viewContent)
+	{
+		htmlCode += `<div class="row"><div class="col journal-content journal-viewer ql-container ql-editor">`+decrypt_string(appPass, journal.journal_html)+`</div></div>`;
+	}
+	
+	htmlCode += `	
 		</div>`;
-	jQuery(journal_manager_scope+"#journals").append(htmlCode);
+
+	return htmlCode;
 }
 
 function openAddNewJournalForm()
@@ -4959,9 +5009,6 @@ function createJournalSearchResultsView(journals)
 	{	
 		jQuery(journal_manager_scope+"#journals").html("");
 		applyConfigCreateJournalBlocks(journals);
-		// for (var i = journals.length - 1; i >= 0; i--) {
-		// 	addJournalBlock(journals[i]);
-		// }
 	}
 }
 
@@ -5004,10 +5051,12 @@ function applyConfigCreateJournalBlocks(journals)
 		});
 	}
 
-
+	let htmlCode =``;
 	for (var i =0; i<p.length; i++) {
-			addJournalBlock(p[i]);
+			htmlCode += getJournalBlock(p[i]);
 		}
+
+	jQuery(journal_manager_scope+"#journals").append(htmlCode);
 }
 
 
