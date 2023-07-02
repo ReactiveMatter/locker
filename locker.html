@@ -1973,7 +1973,6 @@ span.input-group-text
 		<div class="row" id="top-bar">
 		</div>
 		<div class="row" id="view">
-		
 		</div>
 		<div class="row" id="bottom-bar">
 		Dashboard
@@ -1990,8 +1989,7 @@ span.input-group-text
 <div id="lock-screen">
 <div class="container">
 <h3>Locker</h3>
-<div class="text-center lock-tab"><span class="active" id="new-tab">New</span><span id="local-storage-tab">Local storage</span><span id="import-tab">Import</span><span id="help-tab">Help</span></div>
-
+<div class="text-center lock-tab"><span id="local-storage-tab">Local storage</span><span class="active" id="new-tab">Create</span><span id="import-tab">Import</span><span id="help-tab">Help</span></div>
 <div id="lock-new" class="tab-content">
 <div id="lock-create-form" class="form">
 <div class="input-group form-group">
@@ -2031,7 +2029,7 @@ span.input-group-text
 		<li>Local storage: Locker allows you to save your database in the local storage of the browser. If you have saved a database in local storage, they will appear under this tab. You can load or delete your saved database from this tab.</li>
 		<li>Import: If you have a locker database in file, then you can load the database using this option.</li>
 	</ul>
-<p>To start using locker, create a database by entering the desired database name, username, and password in the 'New' tab of the locker screen. The password you enter is used to encrypt your information. Once the database is created you can add passwords, notes and journals.</p>
+<p>To start using locker, create a database by entering the desired database name, username, and password in the 'Create' tab of the locker screen. The password you enter is used to encrypt your information. Once the database is created you can add passwords, notes and journals.</p>
 <p>After creation of your locker database, you will see the various options in the sidebar. You can toggle sidebar from the top-bar.</p>
 <h4>Dashboard</h4>
 <p>This contain summary of your data inside current database.</p>
@@ -2623,7 +2621,9 @@ var toolbarOptions = [
 
 // ************************** Functions to run at start
 bindEvents();
+jQuery("#local-storage-tab").click(); //Change default front tab to local storage
 loadState(state);
+
 
 //For Quill Editor
 var Block = Quill.import('blots/block');
