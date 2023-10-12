@@ -1140,7 +1140,7 @@ img
 {
 	flex-grow: 0 0 1;
 	box-shadow: 0px 0px 1px;
-	background: var(--snow);
+	background: rgba(255,255,255,0.75);
 	height: 40px;
 	z-index: 1000;
 }
@@ -1167,7 +1167,7 @@ img
 {
 	opacity: 1;
 	cursor: pointer;
-	background-color: var(--gray-6);
+	background-color: rgba(255,255,255,0.9);
 	box-shadow: 0px 0px 2px;
 }
 
@@ -1205,7 +1205,7 @@ img
 #bottom-bar
 {
 
-	background: var(--snow);
+	background: rgba(255,255,255,0.75);
 	box-shadow: 0px 0px 1px;
 	overflow: hidden;
 	padding: 0.2em 0.5em;
@@ -1223,16 +1223,32 @@ body
 {
 	background: var(--sidebar-bg-color);
 	color:#fdfdfd;
-	-ms-flex: 0 0 var(--sidebar-width);
-    flex: 0 0 var(--sidebar-width);
+	/*-ms-flex: 0 0 var(--sidebar-width);
+    flex: 0 0 var(--sidebar-width);*/
+    position: fixed;
+    min-height: 100%;
+    z-index: 20000;
+    width: var(--sidebar-width);
+    display: none;
 }
 
+#side-nav-bar .toggle-menu
+{
+	border: none !important;
+	box-shadow: none !important;
+
+}
+#side-nav-bar .toggle-menu:hover
+{
+	background: rgba(255,255,255,0.1);
+
+}
 
 @media screen and (max-width: 767px)
 {
 	:root
 	{
-		--sidebar-width:100%;
+/*		--sidebar-width:100%;*/
 	}
 }
 
@@ -1947,6 +1963,10 @@ span.input-group-text
   background-color: rgba(0, 0, 0, 0.3);
 }
 
+.tab-content a
+{
+	color: aqua;
+}
 
 /*locker.css end*/
 
@@ -1957,6 +1977,9 @@ span.input-group-text
 </div>
 <div id="root" class="row" style="display: none;">
 		<div class="col" id="side-nav-bar">
+	<div class="top-bar-block option toggle-menu" title="Toggle menu">
+	<i class="fas fa-bars"></i>
+	</div>
 	<div class="row"><div class="header">Locker</div></div>
 	<div class="row"><div class="nav-item col" data-target="dashboard">Dashboard</div></div>
 	<div class="row"><div class="nav-item col active" data-target="password_manager">Passwords</div></div>
@@ -2811,7 +2834,7 @@ function bindEvents()
 		var target = jQuery(this).attr("data-target");
 		state.page = target;
 		loadState(state);
-
+		jQuery("#side-nav-bar").stop().hide();
 	});
 
 	jQuery('body').on("click",".option.toggle-menu", function(){
@@ -3159,7 +3182,6 @@ function bindEvents()
 	jQuery('body').on("click",".color-picker .color-box", function()
 	{
 		colorSelector(jQuery(this).attr("value"));
-		
 	});
 	
 }
@@ -5465,9 +5487,9 @@ function colorSelector(color)
 {
 	jQuery(".color-selector").attr("value", color);
 	jQuery(".color-selector").css("background-color",note_colors[color]);
-	jQuery(".color-selector, .ql-toolbar, #note-editor").css("border-color",border_colors[color]);
-	console.log(note_colors[color]);
-	jQuery(".ql-editor").css("background-color",note_colors[color]);
+	// jQuery(".color-selector, .ql-toolbar, #note-editor").css("border-color",border_colors[color]);
+	// console.log(note_colors[color]);
+	jQuery(".color-selector").css("border-color",border_colors[color]);
 	jQuery(".color-picker").hide();
 }
 

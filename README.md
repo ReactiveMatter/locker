@@ -19,6 +19,8 @@ This is an offline html app to save your passwords, personal notes and journals.
 I developed this app for personal use. Currently it serving my needs fully, hence I do not intend to develop it further. If you like the concept and want to develop it further, you are welcome to fork it.
 
 **Change log**
+* Version 7.1 (12.10.2023)
+  * Minor UI changes for mobile
 * Version 7 (27.05.2023)
   * Journal content can be seen in the list of journal entries.
   * Added config option to remember this setting
