@@ -2835,10 +2835,21 @@ function bindEvents()
 		state.page = target;
 		loadState(state);
 		jQuery("#side-nav-bar").stop().hide();
+		jQuery("#root").removeClass("open-sidebar");
 	});
 
 	jQuery('body').on("click",".option.toggle-menu", function(){
 	jQuery("#side-nav-bar").stop().toggle();
+	jQuery("#root").toggleClass("open-sidebar");
+	});
+
+	jQuery('body').on('click', "#root.open-sidebar #main", function(){
+
+		if(jQuery("#side-nav-bar").is(":visible"))
+		{
+			jQuery("#side-nav-bar").stop().hide();
+			jQuery("#root").removeClass("open-sidebar");
+		}
 	});
 
 	/*For password manager */
