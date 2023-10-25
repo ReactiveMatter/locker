@@ -1119,7 +1119,7 @@ img
 
 #view
 {
-/*	height: 100%;*/
+	height: 100%;
 	flex-grow: 1;
 	display: block;
 	padding: 0px 20px;
@@ -1980,6 +1980,11 @@ span.input-group-text
 	color: aqua;
 }
 
+.ql-snow .ql-tooltip
+{
+	z-index: 10;
+}
+
 /*locker.css end*/
 
 </style>
@@ -2216,7 +2221,7 @@ class database
 	{
 	this.name;
 	this.username;
-	this.version=7; //Added in version 1
+	this.version=8; //Added in version 1
 	this.modules={};
 	this.conf= new conf(); //Added in version 1
 	}
@@ -2308,7 +2313,7 @@ class conf
 {
 	constructor()
 	{
-		this.passwordManager={sort: 3},
+		this.passwordManager={sort: 3, searchUsername:false}, //search Username added in version 8
 		this.notesManager={sort: 3,
 	  	tagsPosition: 0, /*Added in version 2
 		0 for bottom and 1 for top
@@ -3381,6 +3386,11 @@ function addDatabase(data)
 				data.version = 7;
 				data.conf.journalManager.viewContent = Database.conf.journalManager.viewContent;
 			}
+			if(data.version == 7)
+			{ 	
+				data.version = 8;
+				data.conf.passwordManager.searchUsername = Database.conf.passwordManager.searchUsername;
+			}
 
 			Database = data;
 
@@ -3879,13 +3889,26 @@ function searchPasswords()
 	{
 	let passwords = Database.modules.passwordManager.passwords;
 	let matchingPasswords = passwords.filter(function(e){
-		if(e.website.toLowerCase().includes(q.toLowerCase()) || e.username.toLowerCase().includes(q.toLowerCase()))
-		{
-			return true;
+		if(Database.conf.passwordManager.searchUsername)
+		{	
+			if(e.website.toLowerCase().includes(q.toLowerCase()) || e.username.toLowerCase().includes(q.toLowerCase()))
+			{	
+				return true;
+			}
+
 		}
+
 		else
 		{
-			return false;
+			if(e.website.toLowerCase().includes(q.toLowerCase()))
+			{	
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+			
 		}
 		
 	});
@@ -4315,6 +4338,7 @@ function closeNoteEditor()
 
 function viewNote(id)
 {	
+	id=parseInt(id);
 
 	let note = database_getNotesObject(id);
 	if(note)
@@ -5171,9 +5195,20 @@ function createSettingsForm()
 		<input type="checkbox" onclick="showpassword(this)"> <span style="margin-left:10px">Show password</span>
 
 		<div style="margin-top:15px;">
+		<h4>Password manager settings</h4>
+		<div class="input-group form-group row">
+		<label for="setting-search-username" class="form-check-label col-sm-3 col-form-label col">Search username field</label>
+  		<div class="col-sm-9 col" style="padding-top:10px;padding-bottom:10px;">
+		<input type="checkbox" name="setting-search-username" style="width:1em;height:1em;">
+		</div>
+		</div>
+		</div>
+
+		<div style="margin-top:15px;">
+		<h4>Notes manager settings</h4>
 		 <div class="input-group form-group">
   	 <label for="setting-tag-position" class="col-sm-3 col-form-label col">Tag position</label>
-			<div class="col-sm-9 col">
+			<div class="col-sm-9 col"> 
 			<select class="form-select form-control" id="setting-tag-position">
 	  	<option value="0">Below the note</option>
 	 		<option value="1">Top of the note</option>
@@ -5184,8 +5219,8 @@ function createSettingsForm()
 		<div class="input-group form-group row">
 		
   	<label for="setting-multitag-filter" class="form-check-label col-sm-3 col-form-label col">Allow multiple tag filter</label>
-  	<div class="col-sm-9 col">
-		<input type="checkbox" name="setting-multitag-filter">
+  	<div class="col-sm-9 col" style="padding-top:10px;padding-bottom:10px;">
+		<input type="checkbox" name="setting-multitag-filter" style="width:1em;height:1em;">
 		</div>
 			<label for="setting-multitag-filter-behaviour" class="col-sm-3 col-form-label col">Multitag filter behaviour</label>
 			<div class="col-sm-9 col">
@@ -5231,6 +5266,8 @@ function saveSettings()
 		changePassword(newPassword);
 	}
 
+	Database.conf.passwordManager.searchUsername = jQuery(settings_scope+"#settings input[name=setting-search-username]").prop('checked');
+
 	Database.conf.notesManager.tagsPosition = jQuery(settings_scope+"#setting-tag-position").val();
 	Database.conf.notesManager.multitagFilter = jQuery(settings_scope+"#settings input[name=setting-multitag-filter]").prop('checked');
 	Database.conf.notesManager.multitagFilterBehaviour = jQuery(settings_scope+"#setting-multitag-filter-behaviour").val();
@@ -5255,6 +5292,15 @@ function restoreSettings()
 	else
 	{
 		jQuery(settings_scope+"#settings input[name=setting-multitag-filter]").prop('checked', false);	
+	}
+
+	if(Database.conf.passwordManager.searchUsername)
+	{
+		jQuery(settings_scope+"#settings input[name=setting-search-username]").prop('checked', true);
+	}
+	else
+	{
+		jQuery(settings_scope+"#settings input[name=setting-search-username]").prop('checked', false);	
 	}
 
 }
@@ -5519,6 +5565,8 @@ function goToInternalLink(link)
 	id= link;
 	id=id.replace("https://note/","");
 	id=id.replace("note://","");
+
+	id=parseInt(id);
 	if(id == 0) {loadNoteList();}
 	else{viewNote(id)};
 	console.log("Internal link clicked");
