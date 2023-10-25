@@ -434,8 +434,8 @@
   float: left;
   height: 24px;
   padding: 3px 5px;
-  width: 28px;
 }
+
 .ql-snow.ql-toolbar button svg,
 .ql-snow .ql-toolbar button svg {
   float: left;
@@ -2669,7 +2669,10 @@ box.className = 'box';
 box.tagName = 'div';
 
 Quill.register(box);
-
+//For adding custom note URI
+(function(Quill) {
+  Quill.import('formats/link').PROTOCOL_WHITELIST = ['http', 'https', 'note']
+})(Quill)
 
 //***************************
 
@@ -3182,6 +3185,11 @@ function bindEvents()
 	});
 
 	jQuery('body').on("click","a[href^='https://note/']:not(div[contenteditable='true'] a)", function(e)
+	{	e.preventDefault();
+		goToInternalLink(this.href);
+	});
+
+	jQuery('body').on("click","a[href^='note://']:not(div[contenteditable='true'] a)", function(e)
 	{	e.preventDefault();
 		goToInternalLink(this.href);
 	});
@@ -4166,6 +4174,7 @@ function openAddNewNoteForm()
   }
   });
 
+
 //Adding custom link handler to quill
  quillObject.getModule('toolbar').addHandler('link', addlink); 
 
@@ -4383,12 +4392,12 @@ function updateTrace()
 		for(let i=0; i<noteHistory.length; i++)
 		{	if(noteHistory[i]==0)
 			{
-				traceHtml+=`<li><a href="https://note/`+noteHistory[i]+`">Note list</a></li>`;
+				traceHtml+=`<li><a href="note://`+noteHistory[i]+`">Note list</a></li>`;
 			}
 			else if(database_getNotesObject(noteHistory[i]))
 			{
 			let noteHeading=database_getNotesObject(noteHistory[i]).title;
-			traceHtml+=`<li><a href="https://note/`+noteHistory[i]+`">`+noteHeading+`</a></li>`;
+			traceHtml+=`<li><a href="note://`+noteHistory[i]+`">`+noteHeading+`</a></li>`;
 			}
 		}
 		
@@ -4593,7 +4602,7 @@ function createSearchDropDown(notes)
 
 	  for (let i=0;i<results.length;i++)
 	  {
-	  	dropdownHTML+=`<a href="https://note/`+results[i].id+`" class = "dropdown-item">`+results[i].title+`</a>`;
+	  	dropdownHTML+=`<a href="note://`+results[i].id+`" class = "dropdown-item">`+results[i].title+`</a>`;
 	  }
 	}
   
@@ -5423,13 +5432,20 @@ function addlink()
 	console.log("Link clicked");
 
 	selection = quillObject.getSelection(); 
+	let selectionText= quillObject.getText(selection.index, selection.length).trim();
+	let linkTextHTML = '';
+
+	if(selectionText.trim().length == 0)
+	{
+		linkTextHTML = `<label for="linkText" style="margin-top:10px">Link text (optional)</label>
+	<input type="text" name="linkText" class="form-control">`;
+	}
 
 
 	let modalHTML = `
 	<div class="form" id="addlinkForm">
 	<input type="text" name="link" class="form-control">
-	<label for="linkText" style="margin-top:10px">Link text (optional)</label>
-	<input type="text" name="linkText" class="form-control">
+	`+linkTextHTML+`
 	<div class="linkDropdown">
 	</div>
 	</div>
@@ -5447,11 +5463,12 @@ function addlink()
 
 function addlinkToEditor() {
 		let link = jQuery("#addlinkForm input[name=link]").val().trim(); 
-		let linkText = jQuery("#addlinkForm input[name=linkText]").val().trim(); 
-    let selectionText= quillObject.getText(selection.index, selection.length).trim();
+		let linkText = '';
+   		let selectionText= quillObject.getText(selection.index, selection.length).trim();
     
     if(selectionText.length == 0)
 			{
+				linkText = jQuery("#addlinkForm input[name=linkText]").val().trim(); 
 				 if(linkText.length == 0)
 					{
 						linkText = link;
@@ -5479,7 +5496,7 @@ function internalLinkSuggestions(){
 	jQuery("#addlinkForm .linkDropdown").html("");
 
 	for (var i = 0; i < matchingNotes.length; i++) {
-		let t = `<a class="linkSuggestion" data="https://note/`+matchingNotes[i].id+`" onClick=selectInternalLink(this)>`+matchingNotes[i].title+`</a>
+		let t = `<a class="linkSuggestion" data="note://`+matchingNotes[i].id+`" onClick=selectInternalLink(this)>`+matchingNotes[i].title+`</a>
 		`;
 		jQuery("#addlinkForm .linkDropdown").append(t);
 	}
@@ -5501,6 +5518,7 @@ function goToInternalLink(link)
 	
 	id= link;
 	id=id.replace("https://note/","");
+	id=id.replace("note://","");
 	if(id == 0) {loadNoteList();}
 	else{viewNote(id)};
 	console.log("Internal link clicked");
