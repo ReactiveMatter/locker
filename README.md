@@ -21,6 +21,7 @@ I developed this app for personal use. Currently it serving my needs fully, henc
 **Change log**
 * Version 8 (25.10.2023)
   * Added custom note:// urls for internal links
+  * Added new setting - search-username for Passwords.
   * Minor UI changes for mobile
   * Bug fixes in notes history trace
 * Version 7 (27.05.2023)
